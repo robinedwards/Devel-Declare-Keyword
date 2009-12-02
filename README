@@ -1,0 +1,28 @@
+TODO
+* export keyword
+* make operator keyword for moose
+
+INFO
+<mst> rob: hey, we were talking about this
+<mst> basically, the answer is to standardise the declaration forms
+<mst> so you have something like
+<mst> keyword method (Proto?, Name?, Block) {
+<mst> and then that can we statically analyzed by something like PPI
+<mst> in order to work out what the syntax is for the keyword
+<mst> then anything using 'keyword' can be supported by a single set of code
+<kentnl> I think you'd first have to standardise the syntax for declaring declarations
+<kentnl> but yes, I see what you mean :)
+<Zefram> a structured macro facility would help there.  but we're some way off being able to do that
+<mst> kentnl: yes
+<mst> kentnl: that's the point
+<mst> kentnl: we write a Devel::Declare keyword -called- keyword
+<mst> and standardise on that
+<Zefram> we desperately need APIs for things like "parse a block" (properly)
+<mst> yes. I was hoping we vcould at least work out how to fake them in the process
+<Zefram> I have a long-term plan to let much of the Perl parser work in a recursive-descent manner
+<kentnl> also, for pedanticsness sake, wouldn't the signature be keyword method ( Name?, Proto?, Block ) , unless of course, you meant the example to do "method ( $foo, $bar, $baz ) mymethod  { } " notation
+
+use Keyword;
+keyword method ( Name?, Proto?, Block ) { 
+#block
+	};
