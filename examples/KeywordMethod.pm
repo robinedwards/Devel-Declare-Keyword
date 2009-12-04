@@ -7,7 +7,7 @@ our $OFFSET;
 
 keyword method => {
 		name=>{parse=>\&parse_name}, 
-		proto=>{parse=>\&parse_proto, action=>\&proto_action, eos=>\&proto_eos}};
+		proto=>{parse=>\&parse_proto, action=>\&proto_action}};
 
 #parse method name
 sub parse_name {
@@ -48,12 +48,6 @@ sub proto_action {
 	return $inject;
 }
 
-sub proto_eos {
-	my $linestr = get_line;
-	my $loffset = get_line_offset;
-	substr($linestr, $loffset, 0) = ';';
-	set_line($linestr);
-}
 
 1;
 

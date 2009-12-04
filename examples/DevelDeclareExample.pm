@@ -17,7 +17,6 @@ sub import {
 	);
 	no strict 'refs';
 	*{$caller.'::method'} = sub (&) {};
-	use strict;
 	use warnings;
 }
 
@@ -104,7 +103,7 @@ sub inject_if_block {
 }
 
 sub inject_scope {
-	on_scope_end {
+	on_scope_end {#
 		my $linestr = Devel::Declare::get_linestr;
 		my $offset = Devel::Declare::get_linestr_offset;
 		substr($linestr, $offset, 0) = ';';
