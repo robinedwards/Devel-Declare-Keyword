@@ -1,138 +1,183 @@
 package Keyword;
-use 5.010000;
 use strict;
 use warnings;
-no strict 'refs';
 use Devel::Declare;
 use B::Hooks::EndOfScope;
-use Exporter 'import';
 use Data::Dumper;
 
 our $VERSION = '0.01';
-our @EXPORT = qw/keyword next_token skip_space
-		scan_word scan_string set_line get_line get_lex get_line_offset get_package/;
 
-our $MODULE = caller();
+our $KW_MODULE = caller;
 
+our $OFFSET;
+our $DECLARATOR;
 
-=head1 api?
-
-keyword $yourkeyword => ( 
-				name => ( parse => sub {}, action => sub {}),
-				proto => ( parse => sub {}, action => sub {}),
-				block => ( parse => sub {}, action => sub {}, end_of_scope => sub {}),
-				);
-
+=head1 Stuff for parsing keyword syntax
 =cut
 
-=head1 EXPORTED Utility Functions
+sub import {
+	my $class = shift;
+	
+	Devel::Declare->setup_for(
+		$KW_MODULE,
+		{ keyword => { const => \&keyword_parser } }
+	);
+	no strict 'refs';
+	*{$KW_MODULE.'::keyword'} = sub (&) { &{$KW_MODULE."::import"} = mk_import(@_); };
+
+	strict->import;
+	warnings->import;
+}
+
+sub keyword_parser {
+	local ($DECLARATOR, $OFFSET) = @_;
+
+	#skip keyword
+	$OFFSET += Devel::Declare::toke_move_past_token($OFFSET);
+
+	#skip ws
+	$OFFSET += Devel::Declare::toke_skipspace($OFFSET);
+
+
+	#strip out the name of new keyword
+	my $name;
+
+	if (my $len = Devel::Declare::toke_scan_word($OFFSET, 1)) {
+		my $linestr = Devel::Declare::get_linestr();
+		$name = substr($linestr, $OFFSET, $len);
+		substr($linestr, $OFFSET, $len) = '';
+		Devel::Declare::set_linestr($linestr);
+	} else {
+		my $line = Devel::Declare::get_linestr;
+		die "expecting identifier for keyword near:\n\t$line";
+	}
+
+	#skip ws
+	$OFFSET += Devel::Declare::toke_skipspace($OFFSET);
+
+	#extract the prototype
+	my $proto;
+	my $linestr = Devel::Declare::get_linestr();
+	if (substr($linestr, $OFFSET, 1) eq '(') {
+		my $length = Devel::Declare::toke_scan_str($OFFSET);
+		$proto = Devel::Declare::get_lex_stuff();
+		Devel::Declare::clear_lex_stuff();
+		$linestr = Devel::Declare::get_linestr();
+		substr($linestr, $OFFSET, $length) = '';
+		Devel::Declare::set_linestr($linestr);
+	} else {
+		die "expecting prototype for keyword at:\n\t$linestr";
+	}
+
+	#produce rules from prototype
+	my $rule = proto_to_rule($proto);
+
+	my $fullname = $name =~ /::/ ? $name : 
+		join('::', Devel::Declare::get_curstash_name(), $name); 
+
+	shadow_keyword(sub (&) { 
+			my $block = shift; 
+			
+			no strict 'refs'; 
+			#install import routine
+			*{$KW_MODULE."::import"} = mk_import($name, $rule);
+			
+			*{$fullname} = sub { 
+				#call main block
+				&$block();
+				}; 
+			});
+}
+
+sub shadow_keyword {
+	my $pack = Devel::Declare::get_curstash_name;
+	Devel::Declare::shadow_sub("${pack}::${DECLARATOR}", $_[0]);
+}
+
+#converts prototype to a list of rules to be called by parser
+sub proto_to_rule {
+	my $proto = shift;
+	$proto =~ s/\s+//g;
+	my @rule;
+
+	for my $ident (split /\,/, $proto){
+		die "parsing prototype failed, bad identifier '$ident'"  unless $ident =~ /^[a-z]{1}\w+[\?]?$/i;
+
+		#TODO check if code is defined
+		# then
+		# check if it matches built-in rule
+		# then provide ref to right bit of code.
+
+		if ($ident =~ /\?$/) { # optional match
+			$ident =~ s/\?//g;
+			push @rule, { code=>"$KW_MODULE\::$ident", optional=>1};
+		}
+		else { # essential match
+			push @rule, { code=>"$KW_MODULE\::$ident"};
+		}
+	}
+
+	return \@rule;
+}
+
+=head1 Internals used by new keywords
 =cut
 
-#next token
-sub next_token () {
-	${$MODULE."::OFFSET"} += Devel::Declare::toke_move_past_token(${$MODULE."::OFFSET"});
-}
-
-#skip space
-sub skip_space () {
-	${$MODULE."::OFFSET"} += Devel::Declare::toke_skipspace(${$MODULE."::OFFSET"});
-}
-
-#scan word
-sub scan_word ($) {
-	return Devel::Declare::toke_scan_word(${$MODULE."::OFFSET"}, shift);
-}
-
-#scan string eg "blah blsah " or q( some string )
-sub scan_string () {
-	return Devel::Declare::toke_scan_str(${$MODULE."::OFFSET"});
-}
-
-#get lex
-sub get_lex () {
-	my $stream = Devel::Declare::get_lex_stuff();
-	Devel::Declare::clear_lex_stuff();
-	return $stream;
-}
-
-#get line
-sub get_line () {
-	return Devel::Declare::get_linestr;
-}
-
-#set line
-sub set_line ($){
-	Devel::Declare::set_linestr(shift());
-}
-
-# get package - returns name of package being compiled 
-sub get_package (){
-	return Devel::Declare::get_curstash_name;
-}
-
-sub get_line_offset (){
-	return Devel::Declare::get_linestr_offset;
-}
-
-=head1 declarator
+=head2 mk_import
+Constructs an import for subroutine for the new keyword
 =cut
 
-sub keyword (%) {
-	my ($keyword,$param) = @_;
-	*{$MODULE."::import"} = mk_import($keyword, $param);
-};
-
-#construct import sub;
 sub mk_import {
-	my ($keyword, $param) = @_;
+	my ($keyword, $rule) = @_;
 	return sub {
 		#modcaller is the user of *your* Keyword based module
 		my $modcaller = caller();
 		my $class = shift;
 		Devel::Declare->setup_for(
 			$modcaller,
-			{ $keyword => { const => mk_parser($keyword,$param) } }
+			{ $keyword => { const => mk_parser($keyword, $rule) } }
 		);
 		*{$modcaller."::$keyword"} = sub (&) {};
+
+		# create scope inject sub
+		#	*{$KW_MODULE."::inject_scope"} = sub {
+		#		on_scope_end {
+		#			my $linestr = get_line;
+		#			my $loffset = get_line_offset;
+		#			substr($linestr, $loffset, 0) = ';';
+		#			set_line($linestr);
+		#	};
+		#}
 	};
 }
 
-#construct parser subroutine
+=head2 mk_parser
+Constructs a parser for the new keyword
+=cut
+
 sub mk_parser {
-	my ($keyword, $param) = @_;
+	my ($name, $rule) = @_;
 
 	return sub {
-		(${$MODULE."::DECL"}, ${$MODULE."::OFFSET"}) = @_;
+		(${$KW_MODULE."::DECL"}, ${$KW_MODULE."::OFFSET"}) = @_;
 
 		#skip keyword
-		next_token;
-		
-		#match name	
-		skip_space;
-		my $name = &{$param->{name}{parse}}();
+		my $OFFSET = Devel::Declare::toke_move_past_token($OFFSET);
 
-		#match proto
-		skip_space;
-		my $proto = &{$param->{proto}{parse}}();
-		my $code = &{$param->{proto}{action}}($proto);
+		my @matched;
 
-		#add eos hook and create sub;
-		if(exists $param->{proto}{eos}) {
-			$code = " BEGIN { $MODULE\::_$keyword\_inject_scope() };\n".$code;
-			no warnings;
-			*{$MODULE."::_$keyword\_inject_scope"} = sub {
-				on_scope_end {
-					&{$param->{proto}{eos}}();
-				};
-			};
-			use warnings;
-		}
+		#execute each rule
+#		for my $r (@$rule) {
+			#push @matched, \*{"$r->{code}"}();
+#		}
+
+		my $code = " BEGIN { $KW_MODULE\::inject_scope() }; ";
 
 		#inject block
 		inject_block($code); 
 
 		if (defined $name) {
-			$name = join('::', get_package, $name)
+			$name = join('::', Devel::Declare::get_curstash_name() , $name)
 			unless ($name =~ /::/);
 			shadow(sub (&) { no strict 'refs'; *{$name} = shift; });
 		} else {
@@ -144,17 +189,17 @@ sub mk_parser {
 #shadow
 sub shadow {
 	my $sub = shift;
-	Devel::Declare::shadow_sub(get_package."::".${$MODULE."::DECL"}, $sub);
+	Devel::Declare::shadow_sub(Devel::Declare::get_curstash_name()."::".${$KW_MODULE."::DECL"}, $sub);
 }
 
 #inject into block
 sub inject_block {
 	my $inject = shift;
-	skip_space;
-	my $linestr = get_line;
-	if (substr($linestr, ${$MODULE."::OFFSET"}, 1) eq '{') {
-		substr($linestr, ${$MODULE."::OFFSET"}+1, 0) = $inject;
-		set_line($linestr);
+	${$KW_MODULE."::OFFSET"} += Devel::Declare::toke_skipspace(${$KW_MODULE."::OFFSET"});
+	my $linestr = Devel::Declare::get_linestr;
+	if (substr($linestr, ${$KW_MODULE."::OFFSET"}, 1) eq '{') {
+		substr($linestr, ${$KW_MODULE."::OFFSET"}+1, 0) = $inject;
+		Devel::Declare::set_linestr($linestr);
 	}
 }
 
