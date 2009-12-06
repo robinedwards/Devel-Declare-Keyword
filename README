@@ -1,6 +1,7 @@
 TODO
-* export keyword
-* make operator keyword for moose
+* create rule keyword
+* figure out why the parser is loosing its position 
+* write builtin rules
 
 INFO
 <mst> rob: hey, we were talking about this
@@ -21,8 +22,3 @@ INFO
 <mst> yes. I was hoping we vcould at least work out how to fake them in the process
 <Zefram> I have a long-term plan to let much of the Perl parser work in a recursive-descent manner
 <kentnl> also, for pedanticsness sake, wouldn't the signature be keyword method ( Name?, Proto?, Block ) , unless of course, you meant the example to do "method ( $foo, $bar, $baz ) mymethod  { } " notation
-
-use Keyword;
-keyword method ( Name?, Proto?, Block ) { 
-#block
-	};

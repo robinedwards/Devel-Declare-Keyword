@@ -120,11 +120,9 @@ sub rule_to_parser {
 		my $result;
 
 		for my $r (@$rule) {
-			warn Dumper $r;
-			my $match = &{$r->{rule}}(\$parser);
-			warn "$r->{name} matched:\n$match\n";
-			#die "failed to match rule $r->{name}" unless $matched or $r->{opt};
-			#$result->{$r->{name}} = &{$r->{action}}($matched); #call rules action
+			my $match = &{$r->{rule}}($parser);
+			$parser->skip_ws;
+			die "failed to match rule $r->{name}" unless $match or $r->{opt};
 		}
 
 	};

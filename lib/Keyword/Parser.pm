@@ -8,7 +8,7 @@ sub new {
 	$self = {} unless $self;
 	no strict 'refs';
 	$self->{offset} = \${caller()."::_PARSER_OFFSET"};
-	${$self->{offset}} = 0;
+	${$self->{offset}} ||= 0;
 	bless($self,__PACKAGE__);	
 }
 

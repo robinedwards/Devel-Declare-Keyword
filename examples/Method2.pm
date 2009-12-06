@@ -3,12 +3,12 @@ use lib 'lib/';
 use Keyword;
 use Data::Dumper;
 
-keyword method (ident?, proto?, something) {
-	warn Dumper @_;
+keyword method (ident?, proto?) {
+	warn "hello";
 };
 
 sub ident {
-	my $parser = ${shift()};
+	my $parser = shift;
 	if (my $len = $parser->scan_word(1)) {
 		my $l = $parser->line;
 		my $ident = substr($l, $parser->offset, $len);
@@ -19,7 +19,7 @@ sub ident {
 }
 
 sub proto {
-	my $parser = ${shift()};
+	my $parser = shift;
 	my $l = $parser->line;
 	if (substr($l, $parser->offset, 1) eq '(') {
 		my $length = $parser->scan_string;
@@ -29,11 +29,6 @@ sub proto {
 		$parser->line($l);
 		return $proto;
 	}
-}
-
-sub something {
-	my $parser = ${shift()};
-	warn "heyho";
 }
 
 1;
