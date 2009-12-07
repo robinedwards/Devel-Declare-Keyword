@@ -18,7 +18,7 @@ sub import {
 		{ keyword => { const => \&sig_parser } }
 	);
 	no strict 'refs';
-	*{$KW_MODULE.'::keyword'} = sub (&) { &{$KW_MODULE."::import"} = mk_import(@_); };
+	*{$KW_MODULE.'::keyword'} = sub (&) {};
 
 	strict->import;
 	warnings->import;
@@ -59,7 +59,7 @@ sub sig_parser {
 	my $rule = proto_to_rule($proto);
 
 	#produce sub that executes these rules
-	my $new_parser = rule_to_parser($rule);
+	my $new_parser = rule_to_parser($rule,$name);
 
 	#construct shadow sub
 	my $shadow = sub (&) { 
@@ -73,11 +73,12 @@ sub sig_parser {
 		*{$KW_MODULE."::$name"} = sub { &$block(); }; 
 	};
 
+
 	#install shadow for keyword routine
 	Devel::Declare::shadow_sub($parser->package."::keyword", $shadow);
 }
 
-#converts prototype to a list of rules to be invoked by the parserparser
+#converts prototype to a list of rules and actions to be invoked by the parser
 sub proto_to_rule {
 	my $proto = shift;
 	$proto =~ s/\s+//g;
@@ -91,19 +92,27 @@ sub proto_to_rule {
 		my $opt;
 		$rule =~ s/\?//g and $opt = 1 if $rule =~ /\?$/;
 
+		#TODO should check for local rule, if not attempt to load one
+
 		#append to list of rules matching builtin rules
 		no strict 'refs';
 		switch($rule) {
 			case 'identifier' { 
 				push @rules, 
-					{name=>$rule, rule=>\&{'Keyword::Rule::Identifier::parse'},opt=>$opt, builtin=>1}
+					{name=>$rule, rule=>\&{'Keyword::Rules::identifier'}, 	
+					action=>\&{$KW_MODULE."::action_$rule"},  
+						opt=>$opt, builtin=>1}
 				}	
 			case 'prototype' { 
 				push @rules, 
-					{name=>$rule, rule=>\&{'Keyword::Rule::Prototype::parse'},opt=>$opt, builtin=>1}
+					{name=>$rule, rule=>\&{'Keyword::Rules::prototype'},
+						action=>\&{$KW_MODULE."::action_$rule"},  
+						opt=>$opt, builtin=>1}
 				}
 				#TODO check this code exists
-			else { push @rules, {name=>$rule, rule=>\&{$KW_MODULE."::$rule"},opt=>$opt}; }; 
+			else { push @rules, {name=>$rule, rule=>\&{$KW_MODULE."::rule_$rule"}, 
+					action=>\&{$KW_MODULE."::action_$rule"},  
+					opt=>$opt}; }; 
 		}
 	}
 
@@ -111,7 +120,7 @@ sub proto_to_rule {
 }
 
 sub rule_to_parser {
-	my $rule = shift;
+	my ($rule,$keyword) = @_;
 	return sub {
 		my $parser = new Keyword::Parser;
 		$parser->next_token; # skip keyword
@@ -119,12 +128,22 @@ sub rule_to_parser {
 
 		my $result;
 
+		#call each rule
 		for my $r (@$rule) {
-			my $match = &{$r->{rule}}($parser);
+			my $match = &{$r->{rule}}($parser); # call rule
 			$parser->skip_ws;
 			die "failed to match rule $r->{name}" unless $match or $r->{opt};
+			my $code = &{$r->{action}}($match); # call action
 		}
 
+		my $name = $parser->package."::$keyword";
+
+		#setup shadow sub
+		my $shadow = sub (&) { 
+			no strict 'refs';
+			*{$name} = shift; 
+		};
+		Devel::Declare::shadow_sub($name, $shadow);
 	};
 }
 
@@ -140,59 +159,33 @@ sub mk_import {
 			{ $keyword => { const => $parser } }
 		);
 
-		#setup prototype for there keyword into modules namespace
+		# setup prototype for there keyword into modules namespace
 		no strict 'refs';
 		*{$module_user."::$keyword"} = sub (&) {};
 
-		# create scope inject sub
-		#	*{$KW_MODULE."::inject_scope"} = sub {
-		#		on_scope_end {
-		#			my $linestr = get_line;
-		#			my $loffset = get_line_offset;
-		#			substr($linestr, $loffset, 0) = ';';
-		#			set_line($linestr);
-		#	};
-		#}
-	};
-}
-
-# Constructs a parser for the new keyword
-=cut
-sub mk_parser {
-	my ($name, $rule) = @_;
-
-
-		#skip keyword
-
-		my $code = " BEGIN { $KW_MODULE\::inject_scope() }; ";
-
-		#inject block
-		inject_block($code); 
-
-		if (defined $name) {
-			$name = join('::', Devel::Declare::get_curstash_name() , $name)
-			unless ($name =~ /::/);
-			shadow(sub (&) { no strict 'refs'; *{$name} = shift; });
-		} else {
-			shadow(sub (&) { shift });
+		# remove need for semi colon
+		*{$KW_MODULE."::inject_scope"} = sub {
+				on_scope_end {
+					my $l = $parser->line;
+					my $loffset = $parser->line_offset;
+					substr($l, $loffset, 0) = ';';
+					$parser->line($l);
+			};
 		}
 	};
 }
-=cut
-#shadow
-sub shadow {
-	my $sub = shift;
-	Devel::Declare::shadow_sub(Devel::Declare::get_curstash_name()."::".${$KW_MODULE."::DECL"}, $sub);
-}
 
 #inject into block
-sub inject_block {
-	my $inject = shift;
-	${$KW_MODULE."::OFFSET"} += Devel::Declare::toke_skipspace(${$KW_MODULE."::OFFSET"});
-	my $linestr = Devel::Declare::get_linestr;
-	if (substr($linestr, ${$KW_MODULE."::OFFSET"}, 1) eq '{') {
-		substr($linestr, ${$KW_MODULE."::OFFSET"}+1, 0) = $inject;
-		Devel::Declare::set_linestr($linestr);
+sub inject_if_block {
+	my ($parser, $code) = @_;
+	$parser->skip_ws;
+	my $l = $parser->line;
+	if (substr($l, $parser->offset, 1) eq '{') {
+		substr($l, $parser->offset+1, 0) = $code;
+		$parser->line($l);
+	}
+	else {
+		die "expecting a block";
 	}
 }
 

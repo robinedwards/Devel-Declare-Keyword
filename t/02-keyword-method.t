@@ -4,9 +4,7 @@ use warnings;
 use lib 'examples/';
 use Method2;
 
-method name ($a, $b, $c) {
-	warn "hello";
-};
+method name ($a, $b, $c) { warn "hello"; };
 
 
 1;

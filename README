@@ -1,7 +1,25 @@
 TODO
-* create rule keyword
-* figure out why the parser is loosing its position 
+* create rule and actions keyword
 * write builtin rules
+* decide on injection api
+
+SYNTAX
+
+keyword method (identifier, prototype?) {
+	inject($identifer->begin_code);
+	inject($prototype->begin_code);
+	inject_end($identifer->end_code);
+	inject_end($prototype->end_code);
+}
+
+rule prototype {
+	return $parser->line;
+}
+
+action prototype {
+	my $match;
+	return $code;
+}
 
 INFO
 <mst> rob: hey, we were talking about this

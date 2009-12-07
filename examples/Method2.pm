@@ -7,7 +7,7 @@ keyword method (ident?, proto?) {
 	warn "hello";
 };
 
-sub ident {
+sub rule_ident {
 	my $parser = shift;
 	if (my $len = $parser->scan_word(1)) {
 		my $l = $parser->line;
@@ -18,7 +18,11 @@ sub ident {
 	}
 }
 
-sub proto {
+sub action_ident {
+	my $match = shift;
+}
+
+sub rule_proto {
 	my $parser = shift;
 	my $l = $parser->line;
 	if (substr($l, $parser->offset, 1) eq '(') {
@@ -29,6 +33,10 @@ sub proto {
 		$parser->line($l);
 		return $proto;
 	}
+}
+
+sub action_proto {
+	my $match = shift;
 }
 
 1;
