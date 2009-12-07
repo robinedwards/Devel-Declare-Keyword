@@ -1,15 +1,15 @@
 TODO
 * create rule and actions keyword
 * write builtin rules
-* decide on injection api
 
 SYNTAX
+# just an idea.
 
 keyword method (identifier, prototype?) {
-	inject($identifer->begin_code);
-	inject($prototype->begin_code);
-	inject_end($identifer->end_code);
-	inject_end($prototype->end_code);
+	$block->end($prototype);
+	$block->begin($prototype);
+	$block->name($identifier);
+	$block->write;
 }
 
 rule prototype {
