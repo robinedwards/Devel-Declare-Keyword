@@ -19,6 +19,7 @@ sub import {
 		$KW_MODULE,
 		{ keyword => { const => \&sig_parser } }
 	);
+
 	no strict 'refs';
 	*{$KW_MODULE.'::keyword'} = sub (&) { 
 		no strict 'refs';
@@ -31,6 +32,8 @@ sub import {
 
 #parses keyword signature
 sub sig_parser {
+
+
 	my $parser = Keyword::Parser->new;
 	$parser->next_token;
 	$parser->skip_ws;
@@ -59,11 +62,8 @@ sub sig_parser {
 	substr($l, $parser->offset+1, 0) = proto_to_code($proto);
 	$parser->line($l);
 
-	#construct shadow sub
-	my $shadow = sub (&) { no strict 'refs';  *{$KW_MODULE."::$keyword"} = shift }; 
-
 	#install shadow for keyword routine
-	$parser->shadow($keyword, $shadow);
+	$parser->shadow($keyword);
 }
 
 sub proto_to_code {
@@ -161,8 +161,9 @@ sub mk_import {
 	my ($pb, $keyword) = @_;
 
 	return sub {
-		# module_user is the user of your Keyword based module
 		my $module_user = caller();
+	
+		# module_user is the user of your Keyword based module
 		Devel::Declare->setup_for(
 			$module_user,
 			{ $keyword => { const => $pb } }
@@ -170,7 +171,12 @@ sub mk_import {
 
 		# setup prototype for there keyword into modules namespace
 		no strict 'refs';
-		*{$module_user."::$keyword"} = sub (&) {};
+		*{$module_user."::$keyword"} = sub (&) { 
+			no strict 'refs';
+			my $name =  ${$module_user."::__block_name"};
+			*{$name} = shift; #store block 
+			${$module_user."::__block_name"} = undef;
+		};
 	};
 }
 

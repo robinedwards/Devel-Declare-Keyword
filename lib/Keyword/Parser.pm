@@ -67,19 +67,20 @@ sub line_offset {
 sub shadow {
 	my ($self, $name) = @_;
 	$name = $self->package()."::$name" if $name;
-
 	my $sub;
 
+	#set name as global for import;
+	no strict 'refs'; 
+	${$self->package."::__block_name"} = $name;
+	
 	if($name) {
-
-			warn "$name: ".Dumper @_;
 		$sub = sub (&) {
 			no strict 'refs'; 
 			*{$name} = shift;
 		};
 	}
 	else {
-		$sub = sub (&) { shift; };
+		$sub = sub (&) { ${$self->package."::__tmp_block"}; };
 	}
 
 	Devel::Declare::shadow_sub("$name", $sub);

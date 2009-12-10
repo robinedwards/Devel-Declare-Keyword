@@ -29,6 +29,7 @@ sub begin {
 
 sub name {
 	my ($self, $name) = @_;
+	no strict 'refs';
 	$self->{parser}->shadow($name);
 }
 
