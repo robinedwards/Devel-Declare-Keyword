@@ -1,10 +1,10 @@
-package Method2;
+package Methods;
 use lib 'lib/';
 use Keyword;
 use Data::Dumper;
 
 keyword method (ident?, proto?, block) {
-	$block->begin("warn 'hello from me';");
+	$block->begin("warn 'hello from Methods';");
 	$block->name($ident);
 };
 

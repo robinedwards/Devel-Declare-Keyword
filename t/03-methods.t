@@ -1,7 +1,7 @@
 package Foobar;
 use strict;
 use warnings;
-use lib 'examples';
+use lib 'examples/';
 use Methods;
 
 method something ($a, $b, $c) { 

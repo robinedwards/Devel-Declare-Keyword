@@ -2,7 +2,7 @@ package Foobar;
 use strict;
 use warnings;
 use lib 'examples/';
-use DevelDeclareExample;
+use DDExample;
 
 sub new {
 	my ($class,) = @_;

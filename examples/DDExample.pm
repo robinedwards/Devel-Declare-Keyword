@@ -1,4 +1,4 @@
-package DevelDeclareExample;
+package DDExample;
 use strict;
 use warnings;
 use Devel::Declare;
@@ -17,7 +17,6 @@ sub import {
 	);
 	no strict 'refs';
 	*{$caller.'::method'} = sub (&) {};
-	use warnings;
 }
 
 our ($Declarator, $Offset);
@@ -35,7 +34,7 @@ sub parser {
 	if (defined $name) {
 		$name = join('::', Devel::Declare::get_curstash_name(), $name)
 		unless ($name =~ /::/);
-		shadow(sub (&) { no strict 'refs'; warn; *{$name} = shift; });
+		shadow(sub (&) { no strict 'refs';  *{$name} = shift; });
 	} else {
 		shadow(sub (&) { shift });
 	}
@@ -113,7 +112,7 @@ sub inject_scope {
 
 
 sub scope_injector_call {
-	return ' BEGIN { DevelDeclareExample::inject_scope() }; ';
+	return ' BEGIN { DDExample::inject_scope() }; ';
 }
 
 sub shadow {

@@ -116,7 +116,7 @@ sub proto_to_parselist {
 				}
 
 			case 'block' { 
-				push @pa, 
+							push @pa, 
 					{name=>$ident, parse=>\&{'Keyword::Parse::Block::new'},
 						action=>sub{return @_},  #returns block object
 						opt=>$opt, builtin=>1}
