@@ -1,11 +1,11 @@
 package Foobar;
 use strict;
 use warnings;
-use lib 'examples/';
-use Method2;
+use lib 'examples';
+use Methods;
 
 method something ($a, $b, $c) { 
-	warn "oooK"; 
+	return 1; 
 };
 
 
@@ -14,6 +14,6 @@ method something ($a, $b, $c) {
 use Test::More qw/no_plan/;
 use Data::Dumper;
 
-Foobar->something;
+ok (Foobar->something);
 
 ok 1;

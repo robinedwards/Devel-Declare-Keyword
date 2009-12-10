@@ -4,7 +4,7 @@ use Keyword;
 use Data::Dumper;
 
 keyword method (ident?, proto?, block) {
-#	$block->begin("warn 'hello from me';");
+	$block->begin("warn 'hello from me';");
 	$block->name($ident);
 };
 
