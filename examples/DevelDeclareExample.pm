@@ -35,7 +35,7 @@ sub parser {
 	if (defined $name) {
 		$name = join('::', Devel::Declare::get_curstash_name(), $name)
 		unless ($name =~ /::/);
-		shadow(sub (&) { no strict 'refs'; *{$name} = shift; });
+		shadow(sub (&) { no strict 'refs'; warn; *{$name} = shift; });
 	} else {
 		shadow(sub (&) { shift });
 	}

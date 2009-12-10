@@ -2,13 +2,14 @@ package Keyword::Parser;
 use strict;
 use warnings;
 use Devel::Declare;
+use Data::Dumper;
 
 sub new {
 	my ($class, $self) = @_;
 	$self = {} unless $self;
 	no strict 'refs';
 	$self->{offset} = \${caller()."::_PARSER_OFFSET"};
-	${$self->{offset}} ||= 0;
+	${$self->{offset}} = 0;
 	bless($self,__PACKAGE__);	
 }
 
@@ -61,6 +62,27 @@ sub package {
 
 sub line_offset {
 	return Devel::Declare::get_linestr_offset;
+}
+
+sub shadow {
+	my ($self, $name) = @_;
+	$name = $self->package()."::$name" if $name;
+
+	my $sub;
+
+	if($name) {
+
+			warn "$name: ".Dumper @_;
+		$sub = sub (&) {
+			no strict 'refs'; 
+			*{$name} = shift;
+		};
+	}
+	else {
+		$sub = sub (&) { shift; };
+	}
+
+	Devel::Declare::shadow_sub("$name", $sub);
 }
 
 1;

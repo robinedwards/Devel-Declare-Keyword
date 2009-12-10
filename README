@@ -1,22 +1,23 @@
 TODO
-* create rule and actions keyword
-* write builtin rules
+* fix sub shadowing / installation
+* add end of scope hooks
+* write more tests and examples
 
 SYNTAX
 # just an idea.
 
-keyword method (identifier, prototype?) {
-	$block->end($prototype);
-	$block->begin($prototype);
+keyword method (identifier?, prototype?, block) {
+	$block->end($prototype->{end_code});
+	$block->begin($prototype->{begin_code});
 	$block->name($identifier);
-	$block->write;
 }
 
-rule prototype {
-	return $parser->line;
+#passed a Keyword::Parser object
+parse prototype ($parser) {
 }
 
-action prototype {
+#passed whatever rule returns
+action prototype ($match) {
 	my $match;
 	return $code;
 }
