@@ -3,8 +3,13 @@ Makefile.PL
 MANIFEST
 README
 lib/Keyword.pm
-examples/DevelDeclareExample.pm
-examples/KeywordMethod.pm
+lib/Keyword/Parser.pm
+lib/Keyword/Parse/Ident.pm
+lib/Keyword/Parse/Block.pm
+lib/Keyword/Parse/Proto.pm
+examples/DDExample.pm
+examples/Methods.pm
 t/00-use.t
-t/01-develdeclareexample.t
-t/02-keyword-method.t
+t/01-dd-example.t
+t/02-syntax.t
+t/03-methods.t

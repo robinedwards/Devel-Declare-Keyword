@@ -5,7 +5,10 @@ use ExtUtils::MakeMaker;
 WriteMakefile(
     NAME              => 'Keyword',
     VERSION_FROM      => 'lib/Keyword.pm', # finds $VERSION
-    PREREQ_PM         => {}, # e.g., Module::Name => 1.1
+    PREREQ_PM         => {
+		'Devel::Declare'=>0,
+		'B::Hooks::EndOfScope'=>0
+	}, # e.g., Module::Name => 1.1
     ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
       (ABSTRACT_FROM  => 'lib/Keyword.pm', # retrieve abstract from module
        AUTHOR         => 'Robin Edwards <rob@>') : ()),
