@@ -61,6 +61,8 @@ sub package {
 }
 
 sub line_offset {
+	my ($self, $os) = @_;
+	 Devel::Declare::set_linestr_offset($os) if $os;
 	return Devel::Declare::get_linestr_offset;
 }
 
