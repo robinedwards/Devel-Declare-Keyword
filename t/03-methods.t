@@ -6,7 +6,7 @@ use Methods;
 
 method something ($a, $b, $c) { 
 	return 1; 
-};
+}
 
 
 1;

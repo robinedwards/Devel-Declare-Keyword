@@ -4,9 +4,10 @@ use Keyword;
 use Data::Dumper;
 
 keyword method (ident?, proto?, block) {
-	$block->begin("warn 'hello from Methods';");
 	$block->name($ident);
-};
+	$block->code("warn 'hello from Methods';");
+	$block->terminate;
+}
 
 sub action_ident {
 	return @_;

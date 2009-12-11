@@ -59,11 +59,22 @@ sub sig_parser {
 
 	$parser->skip_ws;
 	my $l = $parser->line;
-	substr($l, $parser->offset+1, 0) = proto_to_code($proto);
+	my $code =  "BEGIN { Keyword::eos()}; ".proto_to_code($proto);
+	substr($l, $parser->offset+1, 0) = $code;
 	$parser->line($l);
 
 	#install shadow for keyword routine
 	$parser->shadow($keyword);
+}
+
+sub eos {
+	on_scope_end {
+		my $parser = new Keyword::Parser;
+		my $l = $parser->line;
+		my $loffset = $parser->line_offset;
+		substr($l, $loffset, 0) = ';';
+		$parser->line($l);
+	};
 }
 
 sub proto_to_code {
