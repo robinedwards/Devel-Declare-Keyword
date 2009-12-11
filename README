@@ -1,23 +1,20 @@
 TODO
-* fix sub shadowing / installation
-* add end of scope hooks
 * write more tests and examples
 
 SYNTAX
-# just an idea.
-
-keyword method (identifier?, prototype?, block) {
-	$block->end($prototype->{end_code});
-	$block->begin($prototype->{begin_code});
-	$block->name($identifier);
+#parse an action routines called for each entry in proto
+keyword method (ident?, proto?, custom, block) {
+	$block->end($proto->{end_code});
+	$block->begin($proto->{begin_code});
+	$block->name($ident);
 }
 
 #passed a Keyword::Parser object
-parse prototype ($parser) {
+parse custom ($parser) {
 }
 
-#passed whatever rule returns
-action prototype ($match) {
+#passed whatever the parse routine matches
+action proto ($match) {
 	my $match;
 	return $code;
 }
