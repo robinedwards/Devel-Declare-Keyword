@@ -5,16 +5,17 @@ use Data::Dumper;
 
 keyword method (ident?, proto?, block) {
 	$block->name($ident);
-	$block->code("warn 'hello from Methods';");
+	$block->code($proto);
 	$block->terminate;
 }
 
-sub action_ident {
-	return @_;
-}
+sub action_ident { shift; } # return method name
 
 sub action_proto {
-	return @_;
+	my $proto = shift;
+	$proto =~ s/\s//g;
+	$proto = "\$self,$proto" if length($proto);
+	return " my ($proto) = \@_; ";
 }
 
 1;
