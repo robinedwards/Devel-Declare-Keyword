@@ -120,8 +120,10 @@ sub action_parser {
 
 	no strict 'refs';
 	no warnings 'redefine';
+	warn $name;
 	*{$KW_MODULE.'::action'} = sub (&) { 
-		*{$parser->package."::action_$name"} =  shift; 
+		warn $name;
+		*{$KW_MODULE."::action_$name"} =  shift; 
 	};
 }
 
@@ -251,3 +253,89 @@ sub mk_import {
 
 
 1;
+__END__
+
+=head1 NAME 
+
+Keyword - an easy way to declare keyword with custom parsers
+
+=cut
+
+=head1 SYNOPSIS
+
+ package Method;
+ use Keyword;
+
+ keyword method (ident?, proto?, block) {
+   	 $block->name($ident); # assign the block to subroutine
+	 $block->code($proto); # inject proto code
+	 $block->terminate; # add semi colon
+ }
+
+
+ # converts proto str to code
+ action proto ($proto) {
+ 	 $proto =~ s/\s//g;
+	 $proto = "\$self,$proto" if length($proto);
+	 return " my ($proto) = \@_; ";
+ }
+
+ # return method name
+ action ident ($ident) { 
+	 return $ident; 
+ }
+
+ 1;
+ 
+ # some other code
+ use Method;
+
+ method add ($a, $b, $c) { 
+	 return $a+$b+$c;
+ }
+
+=cut
+
+=head1 USAGE 
+
+Each identifier in a keywords prototype represents a parse routine and its associated action.
+
+=cut;
+
+=head2 Parse routines
+
+There 3 built-in parse routines:
+
+ ident - matches an identifier 
+ proto - matches anything surrounded by parenthese
+ block - matches the start of a block
+
+=cut
+
+=head2 Actions
+
+Actions get passed whatever its parse routine matches and return directly
+
+=cut
+
+=head1 CODE
+
+git@github.com:robinedwards/Keyword.git
+
+=head1 AUTHOR
+
+Robin Edwards  <robin.ge@gmail.com>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2009 the Keyword L</AUTHOR>
+as listed above.
+
+=head1 LICENSE
+
+This library is free software and may be distributed under the same terms
+as perl itself.
+
+
+
+
