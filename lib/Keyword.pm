@@ -10,17 +10,20 @@ use Keyword::Parse::Ident;
 use Keyword::Parse::Proto;
 use Keyword::Parse::Block;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $KW_MODULE = caller;
 
 #setup parser for keyword syntax
 sub import {
 	Devel::Declare->setup_for(
 		$KW_MODULE,
-		{ keyword => { const => \&keyword_parser } }
+		{	keyword => { const => \&keyword_parser },
+			parse => { const => \&parse_parser }
+		}
 	);
 
 	no strict 'refs';
+	*{$KW_MODULE.'::parse'} = sub (&) {};
 	*{$KW_MODULE.'::keyword'} = sub (&) { 
 		no strict 'refs';
 		$Keyword::__keyword_block = shift; 
@@ -57,12 +60,37 @@ sub keyword_parser {
 
 	$parser->skip_ws;
 	my $l = $parser->line;
-	my $code =  "BEGIN { Keyword::eos()}; ".proto_to_code($proto);
+	my $code =  "BEGIN { Keyword::eos()}; ".kw_proto_to_code($proto);
 	substr($l, $parser->offset+1, 0) = $code;
 	$parser->line($l);
 
 	#install shadow for keyword routine
 	$parser->shadow($keyword);
+}
+
+# parses the parse keyword
+sub parse_parser {
+	my $parser = Keyword::Parser->new;
+	$parser->next_token;
+	$parser->skip_ws;
+
+	#strip out the name of parse routine
+	my $name = Keyword::Parse::Ident::match($parser) or
+	die "expecting identifier for parse near:\n".$parser->line;
+
+	$parser->skip_ws;
+	my $proto = Keyword::Parse::Proto::match($parser)	or
+	die "expecting prototype for parse at:\n".$parser->line;
+
+	$parser->skip_ws;
+	my $l = $parser->line;
+	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
+
+	substr($l, $parser->offset+1, 0) = $code;
+	$parser->line($l);
+
+	#install shadow for keyword routine
+	$parser->shadow($name);
 }
 
 sub eos {
@@ -75,7 +103,7 @@ sub eos {
 	};
 }
 
-sub proto_to_code {
+sub kw_proto_to_code {
 	my ($proto) = @_;
 	my $inject = " my (";
 
