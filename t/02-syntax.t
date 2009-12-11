@@ -7,6 +7,5 @@ keyword method (ident?, proto?, thing, block) {
 	ok 1;
 }
 
-
 ok 1;
 

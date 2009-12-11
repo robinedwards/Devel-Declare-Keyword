@@ -17,7 +17,7 @@ our $KW_MODULE = caller;
 sub import {
 	Devel::Declare->setup_for(
 		$KW_MODULE,
-		{ keyword => { const => \&sig_parser } }
+		{ keyword => { const => \&keyword_parser } }
 	);
 
 	no strict 'refs';
@@ -31,9 +31,7 @@ sub import {
 }
 
 #parses keyword signature
-sub sig_parser {
-
-
+sub keyword_parser {
 	my $parser = Keyword::Parser->new;
 	$parser->next_token;
 	$parser->skip_ws;
