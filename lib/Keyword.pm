@@ -18,16 +18,17 @@ sub import {
 	Devel::Declare->setup_for(
 		$KW_MODULE,
 		{	keyword => { const => \&keyword_parser },
-			parse => { const => \&parse_parser }
+			parse => { const => \&parse_parser },
+			action => { const => \&action_parser }
 		}
 	);
 
 	no strict 'refs';
 	*{$KW_MODULE.'::keyword'} = sub (&) { 
-		no strict 'refs';
 		$Keyword::__keyword_block = shift; 
 	};
 	*{$KW_MODULE.'::parse'} = sub (&) { };
+	*{$KW_MODULE.'::action'} = sub (&) { };
 
 	strict->import;
 	warnings->import;
@@ -93,6 +94,34 @@ sub parse_parser {
 	no warnings 'redefine';
 	*{$KW_MODULE.'::parse'} = sub (&) { 
 		*{$parser->package."::parse_$name"} =  shift; 
+	};
+}
+
+# parses the action keyword
+sub action_parser {
+	my $parser = Keyword::Parser->new;
+	$parser->next_token;
+	$parser->skip_ws;
+
+	#strip out the name of action
+	my $name = Keyword::Parse::Ident::match($parser) or
+	die "expecting identifier for action near:\n".$parser->line;
+
+	$parser->skip_ws;
+	my $proto = Keyword::Parse::Proto::match($parser)	or
+	die "expecting prototype for action at:\n".$parser->line;
+
+	$parser->skip_ws;
+	my $l = $parser->line;
+	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
+
+	substr($l, $parser->offset+1, 0) = $code;
+	$parser->line($l);
+
+	no strict 'refs';
+	no warnings 'redefine';
+	*{$KW_MODULE.'::action'} = sub (&) { 
+		*{$parser->package."::action_$name"} =  shift; 
 	};
 }
 

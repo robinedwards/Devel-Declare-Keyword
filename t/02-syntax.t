@@ -12,6 +12,11 @@ parse thing ($parser) {
 	ok 1 if !defined $parser;
 }
 
+action thing ($match) {
+	ok 1;
+	ok 1 if !defined $match;
+}
+
 parse_thing();
 
 ok 1;
