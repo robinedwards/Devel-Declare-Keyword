@@ -8,8 +8,11 @@ keyword method (ident?, proto?, thing, block) {
 }
 
 parse thing ($parser) {
-	warn Dumper $parser;
+	ok 1;
+	ok 1 if !defined $parser;
 }
+
+parse_thing();
 
 ok 1;
 

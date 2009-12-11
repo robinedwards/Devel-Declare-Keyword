@@ -23,11 +23,11 @@ sub import {
 	);
 
 	no strict 'refs';
-	*{$KW_MODULE.'::parse'} = sub (&) {};
 	*{$KW_MODULE.'::keyword'} = sub (&) { 
 		no strict 'refs';
 		$Keyword::__keyword_block = shift; 
 	};
+	*{$KW_MODULE.'::parse'} = sub (&) { };
 
 	strict->import;
 	warnings->import;
@@ -65,7 +65,7 @@ sub keyword_parser {
 	$parser->line($l);
 
 	#install shadow for keyword routine
-	$parser->shadow($keyword);
+	$parser->shadow($parser->package."::".$keyword);
 }
 
 # parses the parse keyword
@@ -89,8 +89,11 @@ sub parse_parser {
 	substr($l, $parser->offset+1, 0) = $code;
 	$parser->line($l);
 
-	#install shadow for keyword routine
-	$parser->shadow($name);
+	no strict 'refs';
+	no warnings 'redefine';
+	*{$KW_MODULE.'::parse'} = sub (&) { 
+		*{$parser->package."::parse_$name"} =  shift; 
+	};
 }
 
 sub eos {

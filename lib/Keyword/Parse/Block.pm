@@ -42,6 +42,7 @@ sub code {
 sub name {
 	my ($self, $name) = @_;
 	no strict 'refs';
+	$name = $self->{parser}->package."::$name" if $name;
 	$self->{name} = $name;
 	$self->{parser}->shadow($name);
 }
