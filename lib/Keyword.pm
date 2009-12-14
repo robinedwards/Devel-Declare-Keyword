@@ -6,15 +6,16 @@ use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
 use Keyword::Parser;
-use Keyword::Parse::Ident;
-use Keyword::Parse::Proto;
 use Keyword::Parse::Block;
+use Keyword::Parse::Proto;
+use Keyword::Parse::Ident;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $KW_MODULE = caller;
 
 #setup parser for keyword syntax
 sub import {
+
 	Devel::Declare->setup_for(
 		$KW_MODULE,
 		{	keyword => { const => \&keyword_parser },
@@ -41,13 +42,13 @@ sub keyword_parser {
 	$parser->skip_ws;
 
 	#strip out the name of new keyword
-	my $keyword = Keyword::Parse::Ident::match($parser) or
+	my $keyword = Keyword::Parse::Ident::parse_ident($parser) or
 	die "expecting identifier for keyword near:\n".$parser->line;
 
 	$parser->skip_ws;
 
 	#extract the prototype
-	my $proto = Keyword::Parse::Proto::match($parser)	or
+	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
 	die "expecting prototype for keyword at:\n".$parser->line;
 
 	#produce list of parse routines and there actions from prototype
@@ -76,11 +77,11 @@ sub parse_parser {
 	$parser->skip_ws;
 
 	#strip out the name of parse routine
-	my $name = Keyword::Parse::Ident::match($parser) or
+	my $name = Keyword::Parse::Ident::parse_ident($parser) or
 	die "expecting identifier for parse near:\n".$parser->line;
 
 	$parser->skip_ws;
-	my $proto = Keyword::Parse::Proto::match($parser)	or
+	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
 	die "expecting prototype for parse at:\n".$parser->line;
 
 	$parser->skip_ws;
@@ -90,11 +91,11 @@ sub parse_parser {
 	substr($l, $parser->offset+1, 0) = $code;
 	$parser->line($l);
 
-	no strict 'refs';
-	no warnings 'redefine';
-	*{$KW_MODULE.'::parse'} = sub (&) { 
-		*{$parser->package."::parse_$name"} =  shift; 
-	};
+	$parser->shadow("$KW_MODULE\::parse", sub (&) { 
+		no strict 'refs';
+		*{$KW_MODULE."::parse_$name"} =  shift; 
+	});
+
 }
 
 # parses the action keyword
@@ -104,11 +105,11 @@ sub action_parser {
 	$parser->skip_ws;
 
 	#strip out the name of action
-	my $name = Keyword::Parse::Ident::match($parser) or
+	my $name = Keyword::Parse::Ident::parse_ident($parser) or
 	die "expecting identifier for action near:\n".$parser->line;
 
 	$parser->skip_ws;
-	my $proto = Keyword::Parse::Proto::match($parser)	or
+	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
 	die "expecting prototype for action at:\n".$parser->line;
 
 	$parser->skip_ws;
@@ -171,14 +172,14 @@ sub proto_to_parselist {
 			#builtin
 			case 'ident' { 
 				push @pa, 
-					{name=>$ident, parse=>\&{'Keyword::Parse::Ident::match'}, 	
+					{name=>$ident, parse=>\&{'Keyword::Parse::Ident::parse_ident'}, 	
 					action=>\&{$KW_MODULE."::action_ident"},  
 						opt=>$opt, builtin=>1}
 				}	
 
 			case 'proto' { 
 				push @pa, 
-					{name=>$ident, parse=>\&{'Keyword::Parse::Proto::match'},
+					{name=>$ident, parse=>\&{'Keyword::Parse::Proto::parse_proto'},
 						action=>\&{$KW_MODULE."::action_proto"},  
 						opt=>$opt, builtin=>1}
 				}

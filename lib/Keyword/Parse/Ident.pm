@@ -1,8 +1,6 @@
 package Keyword::Parse::Ident;
-use strict;
-use warnings;
 
-sub match {
+sub parse_ident {
 	my $parser = shift;
 	if (my $len = $parser->scan_word(1)) {
 		my $l = $parser->line;

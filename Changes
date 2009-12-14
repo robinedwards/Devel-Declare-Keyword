@@ -1,5 +1,8 @@
 Revision history for Perl extension Keyword.
 
+0.03  Mon Dec 14 10:37:23 GMT 2009
+	  added action keyword update tests
+
 0.02  Fri Dec 11 19:44:56 2009
 	  added parse keyword
 

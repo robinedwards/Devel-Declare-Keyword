@@ -1,8 +1,6 @@
 package Keyword::Parse::Proto;
-use strict;
-use warnings;
 
-sub match {
+sub parse_proto {
 	my $parser = shift;
 	my $l = $parser->line;
 	if (substr($l, $parser->offset, 1) eq '(') {
