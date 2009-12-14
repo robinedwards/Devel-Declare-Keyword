@@ -14,7 +14,8 @@ I really don't know what I am doing, so all feedback / abuse is welcome.
 robin dot ge at gmail dot com
 
 TODO
-* write more tests, docs and examples
+* add support for blockless keywords
+* add eos inject see MXD
 * cleanup parser construction (check if code exists etc)
 * write default action to return whatever the parse routine matched
 
