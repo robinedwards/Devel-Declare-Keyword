@@ -1,7 +1,7 @@
 ABOUT
-This module aims to provide an easy to use interface to Devel::Declare. 
+This module aims to provide an easy interface to Devel::Declare. 
 
-If you have been sitting under a rock for the last few months, I suggest you take a look at these first:
+I suggest you take a look at these first:
 
 Devel::Declare
 http://search.cpan.org/~flora/Devel-Declare-0.005011/lib/Devel/Declare.pm
@@ -14,10 +14,15 @@ I really don't know what I am doing, so all feedback / abuse is welcome.
 robin dot ge at gmail dot com
 
 TODO
+* remove stupid globals
 * add support for blockless keywords
 * add eos inject see MXD
 * cleanup parser construction (check if code exists etc)
 * write default action to return whatever the parse routine matched
+
+PLAN
+* rename Keyword::Parser to Keyword::Declare alter to sub class of DD:C:S with aliases
+* create new Keyword::Parser class for storing parse routines
 
 SYNTAX
 #parse an action routines called for each entry in proto
