@@ -1,7 +1,9 @@
-package Keyword::Parser;
+package Keyword::Declare;
 use strict;
 use warnings;
 use Devel::Declare;
+
+# maybe subclass Devel::Declare::Context::Simple?
 
 sub new {
 	my ($class, $self) = @_;

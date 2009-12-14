@@ -4,7 +4,7 @@ use warnings;
 use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
-use Keyword::Parser;
+use Keyword::Declare;
 use Keyword::Parse::Block;
 use Keyword::Parse::Proto;
 use Keyword::Parse::Ident;
@@ -38,7 +38,7 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	my $parser = Keyword::Parser->new;
+	my $parser = Keyword::Declare->new;
 	$parser->next_token;
 	$parser->skip_ws;
 
@@ -73,7 +73,7 @@ sub keyword_parser {
 
 # parses the parse keyword
 sub parse_parser {
-	my $parser = Keyword::Parser->new;
+	my $parser = Keyword::Declare->new;
 	$parser->next_token;
 	$parser->skip_ws;
 
@@ -100,7 +100,7 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $parser = Keyword::Parser->new;
+	my $parser = Keyword::Declare->new;
 	$parser->next_token;
 	$parser->skip_ws;
 
@@ -127,7 +127,7 @@ sub action_parser {
 
 sub eos {
 	on_scope_end {
-		my $parser = new Keyword::Parser;
+		my $parser = new Keyword::Declare;
 		my $l = $parser->line;
 		my $loffset = $parser->line_offset;
 		substr($l, $loffset, 0) = ';';
@@ -195,7 +195,7 @@ sub proto_to_parselist {
 sub mk_parser {
 	my ($plist,$keyword) = @_;
 	return sub {
-		my $parser = Keyword::Parser->new;
+		my $parser = Keyword::Declare->new;
 		$parser->next_token;
 		$parser->skip_ws;
 
@@ -221,7 +221,6 @@ sub mk_import {
 
 	return sub {
 		my $module_user = caller();
-	
 		# module_user is the user of your Keyword based module
 		Devel::Declare->setup_for(
 			$module_user,
@@ -301,7 +300,7 @@ There are three built-in parse routines:
 
 Its possible to write your own with the following syntax:
 
- parse something($parser) {
+ parse identifier($parser) {
     if (my $len = $parser->scan_word(1)) {
         my $l = $parser->line;
         my $ident = substr($l, $parser->offset, $len);

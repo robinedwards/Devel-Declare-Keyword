@@ -14,14 +14,14 @@ I really don't know what I am doing, so all feedback / abuse is welcome.
 robin dot ge at gmail dot com
 
 TODO
-* remove stupid globals
+* remove globals
 * add support for blockless keywords
 * add eos inject see MXD
 * cleanup parser construction (check if code exists etc)
 * write default action to return whatever the parse routine matched
 
 PLAN
-* rename Keyword::Parser to Keyword::Declare alter to sub class of DD:C:S with aliases
+* alter Keyword::Declare to sub class of DD:C:S?
 * create new Keyword::Parser class for storing parse routines
 
 SYNTAX
@@ -33,7 +33,7 @@ keyword method (ident?, proto?, custom, block) {
 	$block->terminate; # add semi colon
 }
 
-#passed a Keyword::Parser object
+#passed a Keyword::Declare object
 parse custom ($parser) {
 	if (my $len = $parser->scan_word(1)) {
 		my $l = $parser->line;
