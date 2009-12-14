@@ -1,7 +1,6 @@
 package Keyword;
 use strict;
 use warnings;
-use Switch;
 use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
@@ -164,40 +163,27 @@ sub proto_to_parselist {
 		my $opt;
 		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
 
-
-		# I should NOT be prefix subs with action_ / rule_
-		switch($ident) {
-			no strict 'refs';
-
-			#builtin
-			case 'ident' { 
-				push @pa, 
-					{name=>$ident, parse=>\&{'Keyword::Parse::Ident::parse_ident'}, 	
-					action=>\&{$KW_MODULE."::action_ident"},  
-						opt=>$opt, builtin=>1}
-				}	
-
-			case 'proto' { 
-				push @pa, 
-					{name=>$ident, parse=>\&{'Keyword::Parse::Proto::parse_proto'},
-						action=>\&{$KW_MODULE."::action_proto"},  
-						opt=>$opt, builtin=>1}
-				}
-
-			case 'block' { 
-							push @pa, 
-					{name=>$ident, parse=>\&{'Keyword::Parse::Block::new'},
-						action=>sub{return @_},  #returns block object
-						opt=>$opt, builtin=>1}
-				}
-
-			#custom parse routine
-			else { 
-				push @pa, 
-					{name=>$ident, parse=>\&{$KW_MODULE."::parse_$ident"}, 
-						action=>\&{$KW_MODULE."::action_$ident"},  
-						opt=>$opt}; 
-				}; 
+		my $p = {ident=>$ident, opt=>$opt};
+		no strict 'refs';
+		if($ident eq 'ident') {
+			$p->{parse} = \&{'Keyword::Parse::Ident::parse_ident'};
+			$p->{action} = \&{$KW_MODULE."::action_ident"};
+			push @pa, $p;
+		}
+		elsif($ident eq 'proto') {
+			$p->{parse} = \&{'Keyword::Parse::Proto::parse_proto'};
+			$p->{action} = \&{$KW_MODULE."::action_proto"};
+			push @pa, $p;
+		}
+		elsif($ident eq 'block') {
+			$p->{parse} = \&{'Keyword::Parse::Block::new'};
+			$p->{action} = sub{return @_};
+			push @pa, $p;
+		}
+		else { 	#custom parse routine
+			$p->{parse} = \&{$KW_MODULE."::parse_$ident"};
+			$p->{action} = \&{$KW_MODULE."::action_$ident"};
+			push @pa, $p;
 		}
 	}
 

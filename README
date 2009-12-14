@@ -21,9 +21,9 @@ TODO
 SYNTAX
 #parse an action routines called for each entry in proto
 keyword method (ident?, proto?, custom, block) {
-	$block->end($proto->{end_code});
-	$block->begin($proto->{begin_code});
-	$block->name($ident);
+	$block->name($ident); # name the block
+	$block->code($proto); # inject proto code (at begining)
+	$block->terminate; # add semi colon
 }
 
 #passed a Keyword::Parser object
@@ -65,3 +65,23 @@ YADDA
 <mst> yes. I was hoping we vcould at least work out how to fake them in the process
 <Zefram> I have a long-term plan to let much of the Perl parser work in a recursive-descent manner
 <kentnl> also, for pedanticsness sake, wouldn't the signature be keyword method ( Name?, Proto?, Block ) , unless of course, you meant the example to do "method ( $foo, $bar, $baz ) mymethod  { } " notation
+
+...
+
+<pdcawley> Same technique as is used to insert the semicolon in Moose::Declare is a good starting point.
+<pdcawley> Yeah, injecting into the backend of the block is, currently, a no no.
+<rob> yea but by that point its compiled the block, so I can't seem to inject code there
+<rob> until we can parse a block
+<pdcawley> But you can inject something into the beginning which sets up a datastructure that your end of scope stuff can make use of.
+<pdcawley> Obviously, you need to do something before the block which _declares_ the thing that your 'after' stuff can see
+<rob> yea
+<rob> may run into issues if a keyword like method is used for anon sub though?
+<pdcawley> And you can always insert 'setup_shit; $ret = do {<$block_contents' and have an EOS like '; do_shit; return $ret}'
+<pdcawley> MXD's EOS stuff catches that as well, I think.
+<rob> ok
+<pdcawley> Basically, at the point you set up the insertions, you know if you have a name or are anonymous, so you know whether you need to insert a semicolon at the end or not.
+
+#mk_parser() 
+<pdcawley> Just build a method based on $ident and dispatch to that.
+<rob> ok
+<pdcawley> I'd suggest making an object as early as possible, your dispatch issues get so much easier then.
