@@ -11,9 +11,11 @@ use Keyword::Parse::Ident;
 
 our $VERSION = '0.03';
 our $KW_MODULE = caller;
+our $DEBUG = 0;
 
 #setup parser for keyword syntax
 sub import {
+	$DEBUG = 1 if $_[1] =~ /debug/i;
 
 	Devel::Declare->setup_for(
 		$KW_MODULE,
@@ -94,7 +96,6 @@ sub parse_parser {
 		no strict 'refs';
 		*{$KW_MODULE."::parse_$name"} =  shift; 
 	});
-
 }
 
 # parses the action keyword
@@ -147,6 +148,7 @@ sub kw_proto_to_code {
 	return $inject;
 }
 
+sub debug { warn @_ if $DEBUG; }
 
 #converts prototype to a list of parse and action subs
 sub proto_to_parselist {
@@ -163,7 +165,7 @@ sub proto_to_parselist {
 		my $opt;
 		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
 
-		my $p = {ident=>$ident, opt=>$opt};
+		my $p = {name=>$ident, opt=>$opt};
 		no strict 'refs';
 		if($ident eq 'ident') {
 			$p->{parse} = \&{'Keyword::Parse::Ident::parse_ident'};
@@ -194,8 +196,9 @@ sub mk_parser {
 	my ($plist,$keyword) = @_;
 	return sub {
 		my $parser = Keyword::Parser->new;
-		$parser->next_token; # skip keyword
+		$parser->next_token;
 		$parser->skip_ws;
+
 		my @arg;
 
 		#call each parse routine and action
@@ -203,7 +206,8 @@ sub mk_parser {
 			#TODO: add evals
 			my $match = &{$r->{parse}}($parser); 
 			$parser->skip_ws;
-			die "failed to match parse action  $r->{name}" unless $match or $r->{opt};
+			die "failed to match parse action $r->{name}" unless $match or $r->{opt};
+			debug("matched '$match' for $r->{name}");
 			push @arg, &{$r->{action}}($match);
 		}
 

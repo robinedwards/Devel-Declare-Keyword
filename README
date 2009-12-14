@@ -53,7 +53,7 @@ action proto ($match) {
 	return $code;
 }
 
-YADDA
+IRC
 <mst> rob: hey, we were talking about this
 <mst> basically, the answer is to standardise the declaration forms
 <mst> so you have something like

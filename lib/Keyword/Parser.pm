@@ -2,7 +2,6 @@ package Keyword::Parser;
 use strict;
 use warnings;
 use Devel::Declare;
-use Data::Dumper;
 
 sub new {
 	my ($class, $self) = @_;
