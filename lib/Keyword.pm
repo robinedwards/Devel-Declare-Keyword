@@ -15,7 +15,7 @@ our $DEBUG = 0;
 
 #setup parser for keyword syntax
 sub import {
-	$DEBUG = 1 if $_[1] =~ /debug/i;
+	$DEBUG = 1 if $_[1] and $_[1] =~ /debug/i;
 
 	Devel::Declare->setup_for(
 		$KW_MODULE,
@@ -148,7 +148,7 @@ sub kw_proto_to_code {
 	return $inject;
 }
 
-sub debug { warn @_ if $DEBUG; }
+sub debug { warn "DEBUG: @_\n" if $DEBUG; }
 
 #converts prototype to a list of parse and action subs
 sub proto_to_parselist {
@@ -252,7 +252,7 @@ Keyword - an easy way to declare keyword with custom parsers
 =head1 SYNOPSIS
 
  package Method;
- use Keyword;
+ use Keyword 'debug';
 
  keyword method (ident?, proto?, block) {
    	 $block->name($ident); # assign the block to subroutine
