@@ -18,6 +18,7 @@ action thing ($match) {
 }
 
 parse_thing();
+action_thing();
 
 ok 1;
 

@@ -9,13 +9,17 @@ keyword method (ident?, proto?, block) {
 	$block->terminate;
 }
 
-sub action_ident { shift; } # return method name
 
-sub action_proto {
-	my $proto = shift;
+action proto ($proto) {
 	$proto =~ s/\s//g;
 	$proto = "\$self,$proto" if length($proto);
 	return " my ($proto) = \@_; ";
 }
+
+# return method name
+action ident ($ident) { 
+	return $ident; 
+}
+
 
 1;

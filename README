@@ -1,5 +1,20 @@
+ABOUT
+This module aims to provide an easy to use interface to Devel::Declare. 
+
+If you haven't heard of DD, you have probably been sitting under a rock for the few months, I suggest you take a look at the following modules:
+
+Devel::Develare
+http://search.cpan.org/~flora/Devel-Declare-0.005011/lib/Devel/Declare.pm
+
+MooseX::Declare
+http://search.cpan.org/~flora/MooseX-Declare-0.32/lib/MooseX/Declare.pm
+
+I really don't know what I am doing, so all feedback / abuse is welcome
+
 TODO
-* write more tests and examples
+* write more tests, docs and examples
+* cleanup parser construction (check if code exists etc)
+* write default action to return whatever the parse routine matched
 
 SYNTAX
 #parse an action routines called for each entry in proto
@@ -11,6 +26,16 @@ keyword method (ident?, proto?, custom, block) {
 
 #passed a Keyword::Parser object
 parse custom ($parser) {
+	if (my $len = $parser->scan_word(1)) {
+		my $l = $parser->line;
+		my $ident = substr($l, $parser->offset, $len);
+		substr($l, $parser->offset, $len) = '';
+		$parser->line($l);
+		return $ident if $ident =~ /^[a-z]{1}\w+$/i;
+	}
+	else {
+		die "unable to match blah";
+	}
 }
 
 #passed whatever the parse routine matches
@@ -19,7 +44,7 @@ action proto ($match) {
 	return $code;
 }
 
-INFO
+YADDA
 <mst> rob: hey, we were talking about this
 <mst> basically, the answer is to standardise the declaration forms
 <mst> so you have something like

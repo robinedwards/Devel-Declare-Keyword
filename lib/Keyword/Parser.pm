@@ -71,8 +71,9 @@ sub shadow {
 
 	#set name as global for import;
 	no strict 'refs'; 
-	${$self->package."::__block_name"} = $name;
 
+	${$self->package."::__block_name"} = $name;
+	
 	unless ($sub) {
 		if($name) {
 			$sub = sub (&) {

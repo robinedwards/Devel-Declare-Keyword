@@ -118,13 +118,10 @@ sub action_parser {
 	substr($l, $parser->offset+1, 0) = $code;
 	$parser->line($l);
 
-	no strict 'refs';
-	no warnings 'redefine';
-	warn $name;
-	*{$KW_MODULE.'::action'} = sub (&) { 
-		warn $name;
+	$parser->shadow("$KW_MODULE\::action", sub (&) { 
+		no strict 'refs';
 		*{$KW_MODULE."::action_$name"} =  shift; 
-	};
+	});
 }
 
 sub eos {
@@ -304,21 +301,47 @@ Each identifier in a keywords prototype represents a parse routine and its assoc
 
 =head2 Parse routines
 
-There 3 built-in parse routines:
+There are three built-in parse routines:
 
  ident - matches an identifier 
  proto - matches anything surrounded by parenthese
  block - matches the start of a block
 
+Its possible to write your own with the following syntax:
+
+ parse something($parser) {
+    if (my $len = $parser->scan_word(1)) {
+        my $l = $parser->line;
+        my $ident = substr($l, $parser->offset, $len);
+        substr($l, $parser->offset, $len) = '';
+        $parser->line($l);
+        return $ident if $ident =~ /^[a-z]{1}\w+$/i;
+    }	
+ }
+
+=head3 Blocks
+
+A block is different from a standard parse routine as it returns an object.
+
+This object contains several routines for injecting code into the block:
+
+ $block->name($identifier);
+ $block->code("some(); code();"); # no newlines please
+ $block->terminate; # adds semicolon
+
 =cut
 
 =head2 Actions
 
-Actions get passed whatever its parse routine matches and return directly
+Actions get passed whatever the associated parse routine 'matches'.
+
+There job is to convert whatever is matched to injectable perl code.
 
 =cut
 
 =head1 CODE
+
+http://github.com/robinedwards/Keyword
 
 git@github.com:robinedwards/Keyword.git
 
