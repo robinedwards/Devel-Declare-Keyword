@@ -23,7 +23,8 @@ SYNTAX
 #parse an action routines called for each entry in proto
 keyword method (ident?, proto?, custom, block) {
 	$block->name($ident); # name the block
-	$block->code($proto); # inject proto code (at begining)
+	$block->inject_begin($proto); # inject at begin of block
+	$block->inject_after("warn '$ident() finished';");
 	$block->terminate; # add semi colon
 }
 

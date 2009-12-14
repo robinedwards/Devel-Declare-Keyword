@@ -5,7 +5,8 @@ use Data::Dumper;
 
 keyword method (ident?, proto?, block) {
 	$block->name($ident);
-	$block->code($proto);
+	$block->inject_begin($proto);
+	$block->inject_after("warn 'HELLO!';");
 	$block->terminate;
 }
 

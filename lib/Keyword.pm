@@ -252,7 +252,8 @@ Keyword - an easy way to declare keyword with custom parsers
 
  keyword method (ident?, proto?, block) {
    	 $block->name($ident); # assign the block to subroutine
-	 $block->code($proto); # inject proto code
+	 $block->inject_begin($proto); # inject proto code
+	 $block->inject_after("warn '$ident() finished';");
 	 $block->terminate; # add semi colon
  }
 

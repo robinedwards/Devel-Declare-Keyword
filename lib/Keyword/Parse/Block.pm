@@ -2,6 +2,7 @@ package Keyword::Parse::Block;
 use strict;
 use warnings;
 use B::Hooks::EndOfScope;
+use Data::Dumper;
 
 #doesnt actualy 'parse' a block, just detects the start.
 
@@ -19,9 +20,18 @@ sub match {
 	}
 }
 
-#inject code
-sub code {
+
+sub inject_before {
+	my ($self,$code) = @_;
+}
+
+sub code { inject_begin(@_); };
+
+#inject code into start of block
+sub inject_begin {
 	my ($self, $code) = @_;
+
+	$code =~ s/\n/\ /g;
 
 	$self->{eos} =$self->{parser}->package."::_".
 		$self->{name}."_inject_scope";
@@ -37,6 +47,14 @@ sub code {
 	$self->{parser}->skip_ws;
 	#added end of scope hook
 	$self->{parser}->line($l);
+}
+
+#injects code after the end of the block
+sub inject_after {
+	my ($self, $code) = @_;
+	$code =~ s/\n/\ /g;
+	$self->{inject_after} = $code;
+
 }
 
 sub name {
@@ -58,7 +76,8 @@ sub terminate {
 		on_scope_end {
 			my $l = $self->{parser}->line;
 			my $loffset = $self->{parser}->line_offset;
-			substr($l, $loffset, 0) = ';';
+			substr($l, $loffset, 0) = '; '.
+			($self->{inject_after}?$self->{inject_after}:"");
 			$self->{parser}->line($l);
 		};
 	};
