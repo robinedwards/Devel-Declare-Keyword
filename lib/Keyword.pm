@@ -5,6 +5,7 @@ use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
 use Keyword::Declare;
+use Keyword::Parser;
 use Keyword::Parse::Block;
 use Keyword::Parse::Proto;
 use Keyword::Parse::Ident;
@@ -38,37 +39,33 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	my $parser = Keyword::Declare->new;
-	$parser->next_token;
-	$parser->skip_ws;
+	my $kd = Keyword::Declare->new;
+	$kd->next_token;
+	$kd->skip_ws;
 
 	#strip out the name of new keyword
-	my $keyword = Keyword::Parse::Ident::parse_ident($parser) or
-	die "expecting identifier for keyword near:\n".$parser->line;
+	my $keyword = Keyword::Parse::Ident::parse_ident($kd) or
+	die "expecting identifier for keyword near:\n".$kd->line;
 
-	$parser->skip_ws;
+	$kd->skip_ws;
 
 	#extract the prototype
-	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
-	die "expecting prototype for keyword at:\n".$parser->line;
+	my $proto = Keyword::Parse::Proto::parse_proto($kd)	or
+	die "expecting prototype for keyword at:\n".$kd->line;
 
-	#produce list of parse routines and there actions from prototype
-	my $plist = proto_to_parselist($proto);
-
-	#produce sub that executes these routines
-	my $psub = mk_parser($plist,$keyword);
+	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE});
 
 	no strict 'refs';
-	*{$KW_MODULE."::import"} = mk_import($psub, $keyword);
+	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword);
 
-	$parser->skip_ws;
-	my $l = $parser->line;
+	$kd->skip_ws;
+	my $l = $kd->line;
 	my $code =  "BEGIN { Keyword::eos()}; ".kw_proto_to_code($proto);
-	substr($l, $parser->offset+1, 0) = $code;
-	$parser->line($l);
+	substr($l, $kd->offset+1, 0) = $code;
+	$kd->line($l);
 
 	#install shadow for keyword routine
-	$parser->shadow($parser->package."::".$keyword);
+	$kd->shadow($kd->package."::".$keyword);
 }
 
 # parses the parse keyword
@@ -150,70 +147,6 @@ sub kw_proto_to_code {
 
 sub debug { warn "DEBUG: @_\n" if $DEBUG; }
 
-#converts prototype to a list of parse and action subs
-sub proto_to_parselist {
-	my $proto = shift;
-	$proto =~ s/\s+//g; #
-	
-	my @pa;
-
-	for my $ident (split /\,/, $proto){
-		$ident =~ /^[a-z]{1}\w+[\?]?$/i or  
-			die "bad identifier '$ident' in prototype.";
-		
-		#foptional if ident postfixed with a '?'
-		my $opt;
-		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
-
-		my $p = {name=>$ident, opt=>$opt};
-		no strict 'refs';
-		if($ident eq 'ident') {
-			$p->{parse} = \&{'Keyword::Parse::Ident::parse_ident'};
-			$p->{action} = \&{$KW_MODULE."::action_ident"};
-			push @pa, $p;
-		}
-		elsif($ident eq 'proto') {
-			$p->{parse} = \&{'Keyword::Parse::Proto::parse_proto'};
-			$p->{action} = \&{$KW_MODULE."::action_proto"};
-			push @pa, $p;
-		}
-		elsif($ident eq 'block') {
-			$p->{parse} = \&{'Keyword::Parse::Block::new'};
-			$p->{action} = sub{return @_};
-			push @pa, $p;
-		}
-		else { 	#custom parse routine
-			$p->{parse} = \&{$KW_MODULE."::parse_$ident"};
-			$p->{action} = \&{$KW_MODULE."::action_$ident"};
-			push @pa, $p;
-		}
-	}
-
-	return \@pa;
-}
-
-sub mk_parser {
-	my ($plist,$keyword) = @_;
-	return sub {
-		my $parser = Keyword::Declare->new;
-		$parser->next_token;
-		$parser->skip_ws;
-
-		my @arg;
-
-		#call each parse routine and action
-		for my $r (@$plist) {
-			#TODO: add evals
-			my $match = &{$r->{parse}}($parser); 
-			$parser->skip_ws;
-			die "failed to match parse action $r->{name}" unless $match or $r->{opt};
-			debug("matched '$match' for $r->{name}");
-			push @arg, &{$r->{action}}($match);
-		}
-
-		&{$Keyword::__keyword_block}(@arg);
-	};
-}
 
 # build import routine for new keyword module
 sub mk_import {

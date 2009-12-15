@@ -3,6 +3,7 @@ Makefile.PL
 MANIFEST
 README
 lib/Keyword.pm
+lib/Keyword/Declare.pm
 lib/Keyword/Parser.pm
 lib/Keyword/Parse/Ident.pm
 lib/Keyword/Parse/Block.pm
