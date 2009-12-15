@@ -7,8 +7,8 @@ use Data::Dumper;
 use Keyword::Declare;
 use Keyword::Parser;
 use Keyword::Parse::Block;
-use Keyword::Parse::Proto;
-use Keyword::Parse::Ident;
+use Keyword::Parse::Proto 'parse_proto';
+use Keyword::Parse::Ident 'parse_ident';
 
 our $VERSION = '0.03';
 our $KW_MODULE = caller;
@@ -44,13 +44,13 @@ sub keyword_parser {
 	$kd->skip_ws;
 
 	#strip out the name of new keyword
-	my $keyword = Keyword::Parse::Ident::parse_ident($kd) or
+	my $keyword = parse_ident($kd) or
 	die "expecting identifier for keyword near:\n".$kd->line;
 
 	$kd->skip_ws;
 
 	#extract the prototype
-	my $proto = Keyword::Parse::Proto::parse_proto($kd)	or
+	my $proto = parse_proto($kd)	or
 	die "expecting prototype for keyword at:\n".$kd->line;
 
 	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE});
@@ -70,26 +70,26 @@ sub keyword_parser {
 
 # parses the parse keyword
 sub parse_parser {
-	my $parser = Keyword::Declare->new;
-	$parser->next_token;
-	$parser->skip_ws;
+	my $kd = Keyword::Declare->new;
+	$kd->next_token;
+	$kd->skip_ws;
 
 	#strip out the name of parse routine
-	my $name = Keyword::Parse::Ident::parse_ident($parser) or
-	die "expecting identifier for parse near:\n".$parser->line;
+	my $name = parse_ident($kd) or
+	die "expecting identifier for parse near:\n".$kd->line;
 
-	$parser->skip_ws;
-	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
-	die "expecting prototype for parse at:\n".$parser->line;
+	$kd->skip_ws;
+	my $proto = parse_proto($kd)	or
+	die "expecting prototype for parse at:\n".$kd->line;
 
-	$parser->skip_ws;
-	my $l = $parser->line;
+	$kd->skip_ws;
+	my $l = $kd->line;
 	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
 
-	substr($l, $parser->offset+1, 0) = $code;
-	$parser->line($l);
+	substr($l, $kd->offset+1, 0) = $code;
+	$kd->line($l);
 
-	$parser->shadow("$KW_MODULE\::parse", sub (&) { 
+	$kd->shadow("$KW_MODULE\::parse", sub (&) { 
 		no strict 'refs';
 		*{$KW_MODULE."::parse_$name"} =  shift; 
 	});
@@ -97,26 +97,26 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $parser = Keyword::Declare->new;
-	$parser->next_token;
-	$parser->skip_ws;
+	my $kd = Keyword::Declare->new;
+	$kd->next_token;
+	$kd->skip_ws;
 
 	#strip out the name of action
-	my $name = Keyword::Parse::Ident::parse_ident($parser) or
-	die "expecting identifier for action near:\n".$parser->line;
+	my $name = parse_ident($kd) or
+	die "expecting identifier for action near:\n".$kd->line;
 
-	$parser->skip_ws;
-	my $proto = Keyword::Parse::Proto::parse_proto($parser)	or
-	die "expecting prototype for action at:\n".$parser->line;
+	$kd->skip_ws;
+	my $proto = parse_proto($kd)	or
+	die "expecting prototype for action at:\n".$kd->line;
 
-	$parser->skip_ws;
-	my $l = $parser->line;
+	$kd->skip_ws;
+	my $l = $kd->line;
 	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
 
-	substr($l, $parser->offset+1, 0) = $code;
-	$parser->line($l);
+	substr($l, $kd->offset+1, 0) = $code;
+	$kd->line($l);
 
-	$parser->shadow("$KW_MODULE\::action", sub (&) { 
+	$kd->shadow("$KW_MODULE\::action", sub (&) { 
 		no strict 'refs';
 		*{$KW_MODULE."::action_$name"} =  shift; 
 	});
@@ -124,11 +124,11 @@ sub action_parser {
 
 sub eos {
 	on_scope_end {
-		my $parser = new Keyword::Declare;
-		my $l = $parser->line;
-		my $loffset = $parser->line_offset;
+		my $kd = new Keyword::Declare;
+		my $l = $kd->line;
+		my $loffset = $kd->line_offset;
 		substr($l, $loffset, 0) = ';';
-		$parser->line($l);
+		$kd->line($l);
 	};
 }
 

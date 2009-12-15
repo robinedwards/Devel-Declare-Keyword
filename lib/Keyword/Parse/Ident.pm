@@ -1,4 +1,9 @@
 package Keyword::Parse::Ident;
+use strict;
+use warnings;
+use Exporter 'import';
+
+our @EXPORT_OK = qw/parse_ident/;
 
 sub parse_ident {
 	my $parser = shift;
