@@ -54,10 +54,11 @@ sub keyword_parser {
 	my $proto = parse_proto($kd)	or
 	croak "expecting prototype for keyword at:\n".$kd->line;
 
-	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE});
+	my $b = 1 if $proto =~ /block/i;
+	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE, noblock=>$b});
 
 	no strict 'refs';
-	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword);
+	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword, $b);
 
 	$kd->skip_ws;
 	my $l = $kd->line;
@@ -148,27 +149,32 @@ sub kw_proto_to_code {
 
 sub debug { warn "DEBUG: @_\n" if $DEBUG; }
 
-
 # build import routine for new keyword module
 sub mk_import {
-	my ($pb, $keyword) = @_;
+	my ($parser, $keyword, $block) = @_;
 
 	return sub {
 		my $module_user = caller();
 		# module_user is the user of your Keyword based module
 		Devel::Declare->setup_for(
 			$module_user,
-			{ $keyword => { const => $pb } }
+			{ $keyword => { const => $parser } }
 		);
 
 		# setup prototype for there keyword into modules namespace
 		no strict 'refs';
-		*{$module_user."::$keyword"} = sub (&) { 
-			no strict 'refs';
-			my $name =  ${$module_user."::__block_name"};
-			*{$name} = shift; #store block 
-			${$module_user."::__block_name"} = undef;
-		};
+
+		if ($block) {
+			*{$module_user."::$keyword"} = sub (&) { 
+				no strict 'refs';
+				my $name =  ${$module_user."::__block_name"};
+				*{$name} = shift; #store block 
+				${$module_user."::__block_name"} = undef;
+			};
+		}
+		else {
+			*{$module_user."::$keyword"} = sub { };
+		}
 	};
 }
 
@@ -188,7 +194,7 @@ Keyword - an easy way to declare keyword with custom parsers
  use Keyword 'debug';
 
  keyword method (ident?, proto?, block) {
-   	 $block->name($ident); # assign the block to subroutine
+	 $block->name($ident); # assign the block to subroutine
 	 $block->inject_begin($proto); # inject proto code
 	 $block->inject_after("warn '$ident() finished';");
 	 $block->terminate; # add semi colon
@@ -197,7 +203,7 @@ Keyword - an easy way to declare keyword with custom parsers
 
  # converts proto str to code
  action proto ($proto) {
- 	 $proto =~ s/\s//g;
+	 $proto =~ s/\s//g;
 	 $proto = "\$self,$proto" if length($proto);
 	 return " my ($proto) = \@_; ";
  }

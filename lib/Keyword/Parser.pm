@@ -33,7 +33,7 @@ sub build {
 			push @arg, $self->exec($pa);	
 		}
 
-		return &{$Keyword::__keyword_block}(@arg);
+		&{$Keyword::__keyword_block}(@arg);
 	};
 }
 
