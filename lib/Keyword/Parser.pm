@@ -1,6 +1,7 @@
 package Keyword::Parser;
 use strict;
 use warnings;
+use Carp;
 use Keyword::Declare;
 
 our %BUILTIN = (
@@ -11,8 +12,8 @@ our %BUILTIN = (
 
 sub new {
 	my ($class, $self) = @_;
-	$self->{proto} or die 'no proto provided';
-	$self->{module} or die 'no module provided';
+	$self->{proto} or croak 'no proto provided';
+	$self->{module} or croak 'no module provided';
 	bless($self,$class);	
 }
 
@@ -47,7 +48,7 @@ sub exec {
 	my ($self, $pa) = @_;
 	my $match = &{$pa->{parse}}($self->declare); 
 	$self->declare->skip_ws;
-	die "failed to parse $pa->{name}" unless $match or $pa->{opt};
+	croak "failed to parse $pa->{name}" unless $match or $pa->{opt};
 	return &{$pa->{action}}($match);
 }
 
@@ -57,7 +58,7 @@ sub _build_ident_list {
 	my @i = split /\,/, $self->{proto};
 	for my $ident (@i){
 		$ident =~ /^[a-z]{1}\w+[\?]?$/i or 
-		die "bad identifier '$ident' in prototype.";
+		croak "bad identifier '$ident' in prototype.";
 		my $opt;
 		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
 		push @{$self->{plist}}, {name=>lc($ident),optional=>$opt};

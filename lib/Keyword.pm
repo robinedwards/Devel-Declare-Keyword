@@ -1,6 +1,7 @@
 package Keyword;
 use strict;
 use warnings;
+use Carp;
 use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
@@ -45,13 +46,13 @@ sub keyword_parser {
 
 	#strip out the name of new keyword
 	my $keyword = parse_ident($kd) or
-	die "expecting identifier for keyword near:\n".$kd->line;
+	croak "expecting identifier for keyword near:\n".$kd->line;
 
 	$kd->skip_ws;
 
 	#extract the prototype
 	my $proto = parse_proto($kd)	or
-	die "expecting prototype for keyword at:\n".$kd->line;
+	croak "expecting prototype for keyword at:\n".$kd->line;
 
 	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE});
 
@@ -76,11 +77,11 @@ sub parse_parser {
 
 	#strip out the name of parse routine
 	my $name = parse_ident($kd) or
-	die "expecting identifier for parse near:\n".$kd->line;
+	croak "expecting identifier for parse near:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $proto = parse_proto($kd)	or
-	die "expecting prototype for parse at:\n".$kd->line;
+	croak "expecting prototype for parse at:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $l = $kd->line;
@@ -103,11 +104,11 @@ sub action_parser {
 
 	#strip out the name of action
 	my $name = parse_ident($kd) or
-	die "expecting identifier for action near:\n".$kd->line;
+	croak "expecting identifier for action near:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $proto = parse_proto($kd)	or
-	die "expecting prototype for action at:\n".$kd->line;
+	croak "expecting prototype for action at:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $l = $kd->line;

@@ -6,7 +6,6 @@ PLAN
 * and go through perl's -existing- keywords print $fh "sddfsd". $f, $c etc
 * look at ... metalua ... and common lisp reader macros.
 
-* use carp
 * remove globals
 * write pod for Keyword::Declare
 
