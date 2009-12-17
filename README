@@ -1,30 +1,27 @@
 ABOUT
 This module aims to provide an easy interface to Devel::Declare. 
 
-I suggest you take a look at these first:
+PLAN
+* find usescases from: http://cpants.perl.org/dist/used_by/Devel-Declare
+* and go through perl's -existing- keywords print $fh "sddfsd". $f, $c etc
+* look at ... metalua ... and common lisp reader macros.
 
-Devel::Declare
-http://search.cpan.org/~flora/Devel-Declare-0.005011/lib/Devel/Declare.pm
-
-MooseX::Declare
-http://search.cpan.org/~flora/MooseX-Declare-0.32/lib/MooseX/Declare.pm
-
-I really don't know what I am doing, so all feedback / abuse is welcome.
-
-robin dot ge at gmail dot com
-
-TODO
+* use carp
 * remove globals
-* add support for blockless keywords
-* add eos inject see MXD
+* write pod for Keyword::Declare
+
 * cleanup parser construction (check if code exists etc)
 * write default action to return whatever the parse routine matched
 
-PLAN
-* alter Keyword::Declare to sub class of DD:C:S?
-* create new Keyword::Parser class for storing parse routines
+* add pre and post block hooks with shadow { setup_shit() ;exec_block(); do_shit; return $ret}
+* add blockless support
 
-SYNTAX
+* alter sig syntax to: 
+	keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
+
+* long term goal, a hints file describing syntax to be shared with ppi / vim etc
+
+CURRENT SYNTAX
 #parse an action routines called for each entry in proto
 keyword method (ident?, proto?, custom, block) {
 	$block->name($ident); # name the block
@@ -54,41 +51,4 @@ action proto ($match) {
 }
 
 IRC
-<mst> rob: hey, we were talking about this
-<mst> basically, the answer is to standardise the declaration forms
-<mst> so you have something like
-<mst> keyword method (Proto?, Name?, Block) {
-<mst> and then that can we statically analyzed by something like PPI
-<mst> in order to work out what the syntax is for the keyword
-<mst> then anything using 'keyword' can be supported by a single set of code
-<kentnl> I think you'd first have to standardise the syntax for declaring declarations
-<kentnl> but yes, I see what you mean :)
-<Zefram> a structured macro facility would help there.  but we're some way off being able to do that
-<mst> kentnl: yes
-<mst> kentnl: that's the point
-<mst> kentnl: we write a Devel::Declare keyword -called- keyword
-<mst> and standardise on that
-<Zefram> we desperately need APIs for things like "parse a block" (properly)
-<mst> yes. I was hoping we vcould at least work out how to fake them in the process
-<Zefram> I have a long-term plan to let much of the Perl parser work in a recursive-descent manner
-<kentnl> also, for pedanticsness sake, wouldn't the signature be keyword method ( Name?, Proto?, Block ) , unless of course, you meant the example to do "method ( $foo, $bar, $baz ) mymethod  { } " notation
 
-...
-
-<pdcawley> Same technique as is used to insert the semicolon in Moose::Declare is a good starting point.
-<pdcawley> Yeah, injecting into the backend of the block is, currently, a no no.
-<rob> yea but by that point its compiled the block, so I can't seem to inject code there
-<rob> until we can parse a block
-<pdcawley> But you can inject something into the beginning which sets up a datastructure that your end of scope stuff can make use of.
-<pdcawley> Obviously, you need to do something before the block which _declares_ the thing that your 'after' stuff can see
-<rob> yea
-<rob> may run into issues if a keyword like method is used for anon sub though?
-<pdcawley> And you can always insert 'setup_shit; $ret = do {<$block_contents' and have an EOS like '; do_shit; return $ret}'
-<pdcawley> MXD's EOS stuff catches that as well, I think.
-<rob> ok
-<pdcawley> Basically, at the point you set up the insertions, you know if you have a name or are anonymous, so you know whether you need to insert a semicolon at the end or not.
-
-#mk_parser() 
-<pdcawley> Just build a method based on $ident and dispatch to that.
-<rob> ok
-<pdcawley> I'd suggest making an object as early as possible, your dispatch issues get so much easier then.
