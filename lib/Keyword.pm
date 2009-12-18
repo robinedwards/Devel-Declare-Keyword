@@ -46,16 +46,17 @@ sub keyword_parser {
 
 	#strip out the name of new keyword
 	my $keyword = parse_ident($kd) or
-	croak "expecting identifier for keyword near:\n".$kd->line;
+	confess "expecting identifier for keyword near:\n".$kd->line;
 
 	$kd->skip_ws;
 
 	#extract the prototype
 	my $proto = parse_proto($kd)	or
-	croak "expecting prototype for keyword at:\n".$kd->line;
+	confess "expecting prototype for keyword at:\n".$kd->line;
 
 	my $b = 1 if $proto =~ /block/i;
-	my $parser = Keyword::Parser->new({proto=>$proto, module=>$KW_MODULE, noblock=>$b});
+	my $parser = Keyword::Parser->new({proto=>$proto, 
+			module=>$KW_MODULE, noblock=>$b, keyword=>$keyword});
 
 	no strict 'refs';
 	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword, $b);
@@ -78,11 +79,11 @@ sub parse_parser {
 
 	#strip out the name of parse routine
 	my $name = parse_ident($kd) or
-	croak "expecting identifier for parse near:\n".$kd->line;
+	confess "expecting identifier for parse near:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $proto = parse_proto($kd)	or
-	croak "expecting prototype for parse at:\n".$kd->line;
+	confess "expecting prototype for parse at:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $l = $kd->line;
@@ -105,11 +106,11 @@ sub action_parser {
 
 	#strip out the name of action
 	my $name = parse_ident($kd) or
-	croak "expecting identifier for action near:\n".$kd->line;
+	confess "expecting identifier for action near:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $proto = parse_proto($kd)	or
-	croak "expecting prototype for action at:\n".$kd->line;
+	confess "expecting prototype for action at:\n".$kd->line;
 
 	$kd->skip_ws;
 	my $l = $kd->line;
@@ -173,7 +174,8 @@ sub mk_import {
 			};
 		}
 		else {
-			*{$module_user."::$keyword"} = sub { };
+			*{$module_user."::$keyword"} = sub { 
+				$Keyword::__keyword_block_ret; }; 
 		}
 	};
 }

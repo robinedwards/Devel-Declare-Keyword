@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Keyword::Declare;
+use Data::Dumper;
 
 our %BUILTIN = (
 	proto => 'Keyword::Parse::Proto::parse_proto',
@@ -12,8 +13,9 @@ our %BUILTIN = (
 
 sub new {
 	my ($class, $self) = @_;
-	$self->{proto} or croak 'no proto provided';
-	$self->{module} or croak 'no module provided';
+	$self->{proto} or confess 'no proto provided';
+	$self->{module} or confess 'no module provided';
+	$self->{keyword} or confess 'no keyword provided';
 	bless($self,$class);	
 }
 
@@ -25,14 +27,13 @@ sub build {
 	
 	return sub {
 		my @arg;
-		$self->declare->next_token;
-		$self->declare->skip_ws;
+		$self->declare->skip_to($self->{keyword});
 
 		#call each parse routine and action
 		for my $pa (@{$self->{plist}}) {
 			push @arg, $self->exec($pa);	
 		}
-
+		
 		&{$Keyword::__keyword_block}(@arg);
 	};
 }
@@ -48,7 +49,7 @@ sub exec {
 	my ($self, $pa) = @_;
 	my $match = &{$pa->{parse}}($self->declare); 
 	$self->declare->skip_ws;
-	croak "failed to parse $pa->{name}" unless $match or $pa->{opt};
+	confess "failed to parse $pa->{name}" unless $match or $pa->{opt};
 	return &{$pa->{action}}($match);
 }
 
@@ -58,7 +59,7 @@ sub _build_ident_list {
 	my @i = split /\,/, $self->{proto};
 	for my $ident (@i){
 		$ident =~ /^[a-z]{1}\w+[\?]?$/i or 
-		croak "bad identifier '$ident' in prototype.";
+		confess "bad identifier '$ident' in prototype.";
 		my $opt;
 		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
 		push @{$self->{plist}}, {name=>lc($ident),optional=>$opt};
