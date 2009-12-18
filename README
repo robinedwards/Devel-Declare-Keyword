@@ -6,6 +6,8 @@ SQL.pm - execute select statements in perl
 Methods.pm - 
 
 PLAN
+* add support for multiple keywords per module
+* let modules optionally write there own import subs
 * find usescases from: http://cpants.perl.org/dist/used_by/Devel-Declare
 * and go through perl's -existing- keywords print $fh "sddfsd". $f, $c etc
 * look at ... metalua ... and common lisp reader macros.
