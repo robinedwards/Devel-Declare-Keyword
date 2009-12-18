@@ -1,8 +1,11 @@
 ABOUT
 This module aims to provide an easy interface to Devel::Declare. 
 
+EXAMPLES
+SQL.pm - execute select statements in perl
+Methods.pm - 
+
 PLAN
-* STOP BLOCKLESS BEING EXECUTED AT COMPILE TIME
 * find usescases from: http://cpants.perl.org/dist/used_by/Devel-Declare
 * and go through perl's -existing- keywords print $fh "sddfsd". $f, $c etc
 * look at ... metalua ... and common lisp reader macros.
@@ -14,7 +17,6 @@ PLAN
 * write default action to return whatever the parse routine matched
 
 * add pre and post block hooks with shadow { setup_shit() ;exec_block(); do_shit; return $ret}
-* add blockless support
 
 * alter sig syntax to: 
 	keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
@@ -50,5 +52,4 @@ action proto ($match) {
 	return $code;
 }
 
-IRC
 
