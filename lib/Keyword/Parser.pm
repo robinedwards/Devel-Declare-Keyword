@@ -33,8 +33,14 @@ sub build {
 		for my $pa (@{$self->{plist}}) {
 			push @arg, $self->exec($pa);	
 		}
-		
-		&{$Keyword::__keyword_block}(@arg);
+
+		# if it has a block execute keyword block at compile
+		if($self->{block}) { 
+			&{$Keyword::__keyword_block}(@arg);
+		}
+		else { # no block execute at runtime, save arg
+			@Keyword::__keyword_block_arg = @arg;
+		}
 	};
 }
 

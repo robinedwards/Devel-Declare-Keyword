@@ -56,7 +56,7 @@ sub keyword_parser {
 
 	my $b = 1 if $proto =~ /block/i;
 	my $parser = Keyword::Parser->new({proto=>$proto, 
-			module=>$KW_MODULE, noblock=>$b, keyword=>$keyword});
+			module=>$KW_MODULE, block=>$b, keyword=>$keyword});
 
 	no strict 'refs';
 	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword, $b);
@@ -174,8 +174,10 @@ sub mk_import {
 			};
 		}
 		else {
+			no strict 'refs';
 			*{$module_user."::$keyword"} = sub { 
-				$Keyword::__keyword_block_ret; }; 
+				&$Keyword::__keyword_block(@Keyword::__keyword_block_arg); 
+			};
 		}
 	};
 }
