@@ -4,7 +4,6 @@ use warnings;
 use Carp;
 use Devel::Declare;
 
-# maybe subclass Devel::Declare::Context::Simple?
 
 sub new {
 	my ($class, $self) = @_;
@@ -15,11 +14,23 @@ sub new {
 	bless($self,__PACKAGE__);	
 }
 
+=head1 METHODS
+
+=head2 offset
+
+for setting and retrieving the offset
+
+=cut
+
 sub offset {
 	my ($self, $offset) = @_;
 	${$self->{offset}} = $offset if $offset;
 	return ${$self->{offset}};
 }
+
+=head2 inc_offset
+
+=cut
 
 sub inc_offset {
 	my ($self, $offset) = @_;
@@ -31,10 +42,23 @@ sub inc_offset {
 	}
 	return ${$self->{offset}};
 }
+
+=head2 next_token
+
+skips to the next token
+
+=cut
+
 sub next_token {
 	my ($self) = @_;
 	${$self->{offset}} += Devel::Declare::toke_move_past_token($self->offset);
 }
+
+=head2 skip_to
+
+skips along until it finds a token matching
+
+=cut
 
 sub skip_to {
 	my ($self, $name) = @_;
@@ -49,6 +73,7 @@ sub skip_to {
 	}
 	return $toke;
 }
+
 
 sub strip_to_char {
 	my ($self, $char) = @_;
