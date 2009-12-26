@@ -286,8 +286,7 @@ Robin Edwards  <robin.ge@gmail.com>
 
 =head1 COPYRIGHT
 
-Copyright (c) 2009 the Keyword L</AUTHOR>
-as listed above.
+Copyright (c) 2009 Robin Edwards
 
 =head1 LICENSE
 
