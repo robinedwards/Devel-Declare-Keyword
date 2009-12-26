@@ -4,6 +4,19 @@ use warnings;
 use Carp;
 use Devel::Declare;
 
+=head1 NAME
+
+Keyword::Declare - simple oo interface to Devel::Declare
+
+=cut
+
+=head1 SYNOPSIS
+
+ my $kd = new Keyword::Declare;
+ print $kd->line;
+
+=cut
+
 
 sub new {
 	my ($class, $self) = @_;
@@ -29,6 +42,11 @@ sub offset {
 }
 
 =head2 inc_offset
+
+increments the current offset
+
+ $kd->inc_offset; # by one
+ $kd->inc_offset(23);
 
 =cut
 
@@ -74,6 +92,11 @@ sub skip_to {
 	return $toke;
 }
 
+=head2 strip_to_char
+
+strip out everything until a certain char is matched
+
+=cut
 
 sub strip_to_char {
 	my ($self, $char) = @_;
@@ -87,6 +110,12 @@ sub strip_to_char {
 	return $str;
 }
 
+=head2 terminate
+
+inject a semi colon
+
+=cut
+
 sub terminate {
 	my ($self) = shift;
 	my $l = $self->line;
@@ -94,23 +123,45 @@ sub terminate {
 	$self->line($l);
 }
 
+=head2 skip_ws
+
+skip past white space
+
+=cut
+
 sub skip_ws {
 	my ($self) = @_;
 	${$self->{offset}} += 	Devel::Declare::toke_skipspace($self->offset);
 }
+
+=head2 scan_word
+
+scan in a word, see also scanned
+
+=cut
 
 sub scan_word {
 	my ($self, $n) = @_;
 	return Devel::Declare::toke_scan_word($self->offset, $n);
 }
 
-#scan string eg "blah blsah " or q( some string )
+=head2 scan_string
+
+scan a quoted string, see also scanned
+
+=cut
+
 sub scan_string {
 	my ($self) = @_;
 	return Devel::Declare::toke_scan_str($self->offset);
 }
 
-#returns whatevers been scanned
+=head2 scanned
+
+returns whatever the parser has scanned
+
+=cut
+
 sub scanned {
 	my ($self) = @_;
 	my $stream = Devel::Declare::get_lex_stuff();
@@ -118,23 +169,48 @@ sub scanned {
 	return $stream;
 }
 
-#set line
+
+=head2 line
+
+get or set the current line
+
+=cut
+
 sub line {
 	my ($self, $line) = @_;
 	Devel::Declare::set_linestr($line) if $line;
 	return Devel::Declare::get_linestr;
 }
 
-# package - returns name of package being compiled 
+=head2 package
+
+returns name of package being compiled 
+
+=cut
+
 sub package {
 	return Devel::Declare::get_curstash_name;
 }
+
+=head2 line_offset
+
+get or set the current lines offset
+
+=cut
 
 sub line_offset {
 	my ($self, $os) = @_;
 	 Devel::Declare::set_linestr_offset($os) if $os;
 	return Devel::Declare::get_linestr_offset;
 }
+
+=head2 shadow
+
+sets up a shadow subroutine, optionally takes a sub ref as the shadow
+
+ $declare->shadow('Some::Thing::do_something', \&somecoderef)
+
+=cut
 
 sub shadow {
 	my ($self, $name, $sub) = @_;
@@ -157,5 +233,26 @@ sub shadow {
 
 	Devel::Declare::shadow_sub($name, $sub);
 }
+
+=head1 CODE
+
+http://github.com/robinedwards/Keyword
+
+git@github.com:robinedwards/Keyword.git
+
+=head1 AUTHOR
+
+Robin Edwards  <robin.ge@gmail.com>
+
+=head1 COPYRIGHT
+
+Copyright (c) 2009 Robin Edwards
+
+=head1 LICENSE
+
+This library is free software and may be distributed under the same terms
+as perl itself.
+
+=cut
 
 1;
