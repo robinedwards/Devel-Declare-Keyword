@@ -1,15 +1,16 @@
-use 5.010000;
-use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details of how to influence
-# the contents of the Makefile that is written.
-WriteMakefile(
-    NAME              => 'Keyword',
-    VERSION_FROM      => 'lib/Keyword.pm', # finds $VERSION
-    PREREQ_PM         => {
-		'Devel::Declare'=>0,
-		'B::Hooks::EndOfScope'=>0
-	}, # e.g., Module::Name => 1.1
-    ($] >= 5.005 ?     ## Add these new keywords supported since 5.005
-      (ABSTRACT_FROM  => 'lib/Keyword.pm', # retrieve abstract from module
-       AUTHOR         => 'Robin Edwards <rob@>') : ()),
-);
+use inc::Module::Install;
+
+# Define metadata
+name           'Keyword';
+all_from       'lib/Keyword.pm';
+
+# Specific dependencies
+requires       'Devel::Declare'  => '0.0';
+requires       'B::Hooks::EndOfScope'  => '0.0';
+test_requires  'Test::More'  => '0.42';
+#recommends     'Text::CSV_XS'=> '0.50';
+no_index       'directory'   => 'examples';
+#install_script 'myscript';
+tests "t/*.t t/usecase/*.t";
+
+WriteAll;
