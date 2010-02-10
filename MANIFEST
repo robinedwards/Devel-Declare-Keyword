@@ -10,7 +10,9 @@ lib/Keyword/Parse/Block.pm
 lib/Keyword/Parse/Proto.pm
 examples/DDExample.pm
 examples/Methods.pm
+examples/SQL.pm
 t/00-use.t
 t/01-dd-example.t
 t/02-syntax.t
-t/03-methods.t
+t/usecase/methods.t
+t/usecase/sql.t
