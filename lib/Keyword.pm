@@ -41,6 +41,7 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
+	warn Dumper @_; #need to pass @_ to KD
 	my $kd = Keyword::Declare->new;
 	$kd->next_token;
 	$kd->skip_ws;

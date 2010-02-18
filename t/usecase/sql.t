@@ -7,7 +7,7 @@ use Data::Dumper;
 
 ok 1;
 
-SQL::CONNECT("dbi:Pg:dbname=humus;host=localhost;port=5432");
+SQL::CONNECT("dbi:Pg:dbname=test;host=localhost;port=5432");
 
 my $r = SELECT * FROM TRACK;
 
