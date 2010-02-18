@@ -27,7 +27,8 @@ sub build {
 	return sub {
 		$self->declare(Keyword::Declare->new(@_));
 		my @arg;
-		$self->declare->skip_to($self->{keyword});
+		$self->declare->skip_to;
+		$self->declare->skip_ws;
 
 		#call each parse routine and action
 		for my $pa (@{$self->{plist}}) {

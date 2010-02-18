@@ -76,6 +76,7 @@ sub next_token {
 	$self->{offset} += Devel::Declare::toke_move_past_token($self->offset);
 }
 
+
 =head2 skip_to
 
 skips along until it finds a token matching
@@ -83,17 +84,17 @@ skips along until it finds a token matching
 =cut
 
 sub skip_to {
-	my ($self, $name) = @_;
-	my $toke = "";
-	while ($toke ne $name) {
-		my $len = $self->scan_word(1);
-		my $l = $self->line;
-		$toke = substr($l, $self->offset, $len);
-		$self->offset($len + $self->offset);
-		$self->inc_offset;
-		confess "couldn't find '$name' on this line" if $toke and $toke =~ /\n/;
-	}
-	return $toke;
+	my ($self, $token) = @_;;
+	$token ||= $self->declarator;
+	my $len = $self->scan_word(0);
+	confess "Couldn't find token '$token'"
+		unless $len;
+
+	my $l = $self->line;
+	my $name = substr($l, $self->offset, $len);
+	confess "Expected declarator '$token', got '${name}'"
+	unless $name eq $token;
+	$self->inc_offset($len);
 }
 
 =head2 strip_to_char
@@ -204,7 +205,7 @@ get or set the current lines offset
 
 sub line_offset {
 	my ($self, $os) = @_;
-	 Devel::Declare::set_linestr_offset($os) if $os;
+	Devel::Declare::set_linestr_offset($os) if $os;
 	return Devel::Declare::get_linestr_offset;
 }
 
@@ -223,7 +224,7 @@ sub shadow {
 	no strict 'refs'; 
 
 	${$self->package."::__block_name"} = $name;
-	
+
 	unless ($sub) {
 		if($name) {
 			$sub = sub (&) {
