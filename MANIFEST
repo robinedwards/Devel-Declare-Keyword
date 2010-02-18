@@ -11,8 +11,9 @@ lib/Keyword/Parse/Proto.pm
 examples/DDExample.pm
 examples/Methods.pm
 examples/SQL.pm
-t/00-use.t
-t/01-dd-example.t
-t/02-syntax.t
+t/sanity.t
+t/ddexample.t
+t/syntax.t
+t/pod.t
 t/usecase/methods.t
 t/usecase/sql.t

@@ -5,6 +5,9 @@ use Carp;
 use Devel::Declare;
 use Data::Dumper;
 
+#TODO organise high level and low level methods
+#TODO possible import strip_names_and_args
+
 =head1 NAME
 
 Keyword::Declare - simple oo interface to Devel::Declare
@@ -41,8 +44,8 @@ sub offset {
 }
 
 sub declarator {
-  my $self = shift;
-  return $self->{declarator}
+	my $self = shift;
+	return $self->{declarator}
 }
 
 =head2 inc_offset
@@ -76,30 +79,62 @@ sub next_token {
 	$self->{offset} += Devel::Declare::toke_move_past_token($self->offset);
 }
 
+=head2 skip_token
 
-=head2 skip_to
-
-skips along until it finds a token matching
+skips a token matching 
 
 =cut
 
-sub skip_to {
+sub skip_token {
 	my ($self, $token) = @_;;
-	$token ||= $self->declarator;
 	my $len = $self->scan_word(0);
-	confess "Couldn't find token '$token'"
-		unless $len;
+	confess "Couldn't find token '$token'" unless $len;
 
 	my $l = $self->line;
-	my $name = substr($l, $self->offset, $len);
-	confess "Expected declarator '$token', got '${name}'"
-	unless $name eq $token;
+	my $match = substr($l, $self->offset, $len);
+	confess "Expected declarator '$token', got '${match}'"
+	unless $match eq $token;
 	$self->inc_offset($len);
+	return $match;
+}
+
+
+=head2 strip_token
+
+strips a token 
+
+=cut
+
+sub strip_token {
+	my ($self) = @_;;
+	my $len = $self->scan_word(0);
+	confess "Couldn't find a token." unless $len;
+	my $l = $self->line;
+	my $match = substr($l, $self->offset, $len) = '';
+	$self->inc_offset($len);
+	return $match;
+}
+
+=head2 strip_ident
+
+strips an identifier
+
+=cut
+
+sub strip_ident {
+	my $self = shift;
+	if (my $len = Devel::Declare::toke_scan_ident( $self->offset )) {
+		my $l = $self->line;
+		my $ident = substr($l, $self->offset, $len);
+		substr($l, $self->offset, $len) = '';
+		$self->line($l);
+		return $ident;
+	}
 }
 
 =head2 strip_to_char
 
-strip out everything until a certain char is matched
+#strip out everything until a certain char is matched
 
 =cut
 
@@ -148,6 +183,17 @@ scan in a word, see also scanned
 sub scan_word {
 	my ($self, $n) = @_;
 	return Devel::Declare::toke_scan_word($self->offset, $n);
+}
+
+=head2 scan_ident
+
+scan in a ident, see also scanned
+
+=cut
+
+sub scan_ident {
+	my ($self, $n) = @_;
+	return Devel::Declare::toke_scan_ident($self->offset, $n);
 }
 
 =head2 scan_string

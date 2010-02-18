@@ -110,7 +110,7 @@ sub action_parser {
 	confess "expecting identifier for action near:\n".$kd->line;
 
 	$kd->skip_ws;
-	my $proto = parse_proto($kd)	or
+	my $proto = parse_proto($kd) or
 	confess "expecting prototype for action at:\n".$kd->line;
 
 	$kd->skip_ws;

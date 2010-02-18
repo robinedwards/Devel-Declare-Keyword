@@ -25,11 +25,13 @@ sub build {
 	$self->_lookup_routines;
 	
 	return sub {
-		$self->declare(Keyword::Declare->new(@_));
-		my @arg;
-		$self->declare->skip_to;
-		$self->declare->skip_ws;
+		my $kd = Keyword::Declare->new(@_);
+		$kd->skip_token($kd->declarator);
+		$kd->skip_ws;
 
+		$self->declare($kd);
+
+		my @arg;
 		#call each parse routine and action
 		for my $pa (@{$self->{plist}}) {
 			push @arg, $self->exec($pa);	
