@@ -22,8 +22,7 @@ sub new {
 	my ($class, $self) = @_;
 	$self = {} unless $self;
 	no strict 'refs';
-	$self->{offset} = \${caller()."::_PARSER_OFFSET"};
-	${$self->{offset}} = 0;
+	$self->{offset} = 0;
 	bless($self,__PACKAGE__);	
 }
 
@@ -37,8 +36,8 @@ for setting and retrieving the offset
 
 sub offset {
 	my ($self, $offset) = @_;
-	${$self->{offset}} = $offset if $offset;
-	return ${$self->{offset}};
+	$self->{offset} = $offset if $offset;
+	return $self->{offset};
 }
 
 =head2 inc_offset
@@ -53,12 +52,12 @@ increments the current offset
 sub inc_offset {
 	my ($self, $offset) = @_;
 	if($offset) {
-		${$self->{offset}} += $offset;
+		$self->{offset} += $offset;
 	}
 	else {
-		${$self->{offset}}++;
+		$self->{offset}++;
 	}
-	return ${$self->{offset}};
+	return $self->{offset};
 }
 
 =head2 next_token
@@ -69,7 +68,7 @@ skips to the next token
 
 sub next_token {
 	my ($self) = @_;
-	${$self->{offset}} += Devel::Declare::toke_move_past_token($self->offset);
+	$self->{offset} += Devel::Declare::toke_move_past_token($self->offset);
 }
 
 =head2 skip_to
@@ -131,7 +130,7 @@ skip past white space
 
 sub skip_ws {
 	my ($self) = @_;
-	${$self->{offset}} += 	Devel::Declare::toke_skipspace($self->offset);
+	$self->{offset} += 	Devel::Declare::toke_skipspace($self->offset);
 }
 
 =head2 scan_word
