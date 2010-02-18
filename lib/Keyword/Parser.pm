@@ -23,9 +23,9 @@ sub build {
 	my $self = shift;
 	$self->_build_ident_list;
 	$self->_lookup_routines;
-	$self->declare(Keyword::Declare->new);
 	
 	return sub {
+		$self->declare(Keyword::Declare->new(@_));
 		my @arg;
 		$self->declare->skip_to($self->{keyword});
 

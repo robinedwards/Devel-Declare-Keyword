@@ -41,8 +41,7 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	warn Dumper @_; #need to pass @_ to KD
-	my $kd = Keyword::Declare->new;
+	my $kd = Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -75,7 +74,7 @@ sub keyword_parser {
 
 # parses the parse keyword
 sub parse_parser {
-	my $kd = Keyword::Declare->new;
+	my $kd = Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -102,7 +101,7 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $kd = Keyword::Declare->new;
+	my $kd = Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 

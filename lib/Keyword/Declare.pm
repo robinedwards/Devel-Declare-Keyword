@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Carp;
 use Devel::Declare;
+use Data::Dumper;
 
 =head1 NAME
 
@@ -19,11 +20,10 @@ Keyword::Declare - simple oo interface to Devel::Declare
 
 
 sub new {
-	my ($class, $self) = @_;
-	$self = {} unless $self;
-	no strict 'refs';
-	$self->{offset} = 0;
-	bless($self,__PACKAGE__);	
+	my ($class) = @_;
+	my $self->{offset} = $_[2] || 0;
+	$self->{declarator} = $_[1];
+	bless($self,$class);	
 }
 
 =head1 METHODS
@@ -38,6 +38,11 @@ sub offset {
 	my ($self, $offset) = @_;
 	$self->{offset} = $offset if $offset;
 	return $self->{offset};
+}
+
+sub declarator {
+  my $self = shift;
+  return $self->{declarator}
 }
 
 =head2 inc_offset
