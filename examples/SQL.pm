@@ -5,7 +5,7 @@ use DBI;
 use Carp;
 use Data::Dumper;
 
-sub import { install_keyword_SELECT();};
+#sub import { install_keyword_SELECT();};
 
 our $DBH;
 

@@ -23,9 +23,10 @@ Keyword::Declare - simple oo interface to Devel::Declare
 
 
 sub new {
-	my ($class) = @_;
-	my $self->{offset} = $_[2] || 0;
-	$self->{declarator} = $_[1];
+	my ($class,$decl,$offset) = @_;
+    my $self = {};
+	$self->{offset} = $offset || 0;
+	$self->{declarator} = $decl;
 	bless($self,$class);	
 }
 
@@ -283,6 +284,8 @@ sub shadow {
 	}
 
 	Devel::Declare::shadow_sub($name, $sub);
+
+    return $sub;
 }
 
 =head1 CODE

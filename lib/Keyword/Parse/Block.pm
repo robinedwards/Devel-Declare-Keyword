@@ -4,7 +4,7 @@ use warnings;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
 
-#doesnt actualy 'parse' a block, just detects the start.
+# doesnt actualy 'parse' a block, just detects the start.
 
 sub new {
 	my ($parser) = @_;
@@ -20,14 +20,13 @@ sub match {
 	}
 }
 
-
 sub inject_before {
 	my ($self,$code) = @_;
 }
 
 sub code { inject_begin(@_); };
 
-#inject code into start of block
+# inject code into start of block
 sub inject_begin {
 	my ($self, $code) = @_;
 
@@ -49,7 +48,7 @@ sub inject_begin {
 	$self->{parser}->line($l);
 }
 
-#injects code after the end of the block
+# injects code after the end of the block
 sub inject_after {
 	my ($self, $code) = @_;
 	$code =~ s/\n/\ /g;
@@ -62,11 +61,14 @@ sub name {
 	no strict 'refs';
 	$name = $self->{parser}->package."::$name" if $name;
 	$self->{name} = $name;
-	$self->{parser}->shadow($name);
+	return $self->{parser}->shadow($name);
 }
 
+sub execute {
+	my ($self) = @_;
+}
 
-#set end of scope code
+# set end of scope code
 # !! B:H:EOS won't allow you to inject code into the block
 sub terminate {
 	my ($self) = @_;
