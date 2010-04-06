@@ -1,5 +1,5 @@
 use Test::More qw/no_plan/;
-use Keyword;
+use Devel::Declare::Keyword;
 use Data::Dumper;
 ok 1;
 

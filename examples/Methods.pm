@@ -1,6 +1,6 @@
 package Methods;
 use lib 'lib/';
-use Keyword qw/debug/;
+use Devel::Declare::Keyword qw/debug/;
 use Data::Dumper;
 
 keyword method (ident?, proto?, block) {

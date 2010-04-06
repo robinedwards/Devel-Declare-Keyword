@@ -1,4 +1,4 @@
-package Keyword::Parse::Proto;
+package Devel::Declare::Keyword::Parse::Proto;
 use strict;
 use warnings;
 use Exporter 'import';

@@ -1,4 +1,4 @@
-package Keyword::Parse::Ident;
+package Devel::Declare::Keyword::Parse::Ident;
 use strict;
 use warnings;
 use Exporter 'import';

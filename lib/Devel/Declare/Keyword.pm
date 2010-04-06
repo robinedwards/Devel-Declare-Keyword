@@ -1,4 +1,4 @@
-package Keyword;
+package Devel::Declare::Keyword;
 use 5.008000;
 use strict;
 use warnings;
@@ -6,11 +6,11 @@ use Carp;
 use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
-use Keyword::Declare;
-use Keyword::Parser;
-use Keyword::Parse::Block;
-use Keyword::Parse::Proto 'parse_proto';
-use Keyword::Parse::Ident 'parse_ident';
+use Devel::Declare::Keyword::Declare;
+use Devel::Declare::Keyword::Parser;
+use Devel::Declare::Keyword::Parse::Block;
+use Devel::Declare::Keyword::Parse::Proto 'parse_proto';
+use Devel::Declare::Keyword::Parse::Ident 'parse_ident';
 
 our $VERSION = '0.03';
 our $KW_MODULE = caller;
@@ -30,7 +30,7 @@ sub import {
 
 	no strict 'refs';
 	*{$KW_MODULE.'::keyword'} = sub (&) { 
-		$Keyword::__keyword_block = shift; 
+		$Devel::Declare::Keyword::__keyword_block = shift; 
 	};
 	*{$KW_MODULE.'::parse'} = sub (&) { };
 	*{$KW_MODULE.'::action'} = sub (&) { };
@@ -41,7 +41,7 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	my $kd = Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -56,7 +56,7 @@ sub keyword_parser {
 	confess "expecting prototype for keyword at:\n".$kd->line;
 
 	my $b = 1 if $proto =~ /block/i;
-	my $parser = Keyword::Parser->new({proto=>$proto, 
+	my $parser = Devel::Declare::Keyword::Parser->new({proto=>$proto, 
 			module=>$KW_MODULE, block=>$b, keyword=>$keyword});
 
 	no strict 'refs';
@@ -64,7 +64,7 @@ sub keyword_parser {
 
 	$kd->skip_ws;
 	my $l = $kd->line;
-	my $code =  "BEGIN { Keyword::eos()}; ".kw_proto_to_code($proto);
+	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; ".kw_proto_to_code($proto);
 	substr($l, $kd->offset+1, 0) = $code;
 	$kd->line($l);
 
@@ -74,7 +74,7 @@ sub keyword_parser {
 
 # parses the parse keyword
 sub parse_parser {
-	my $kd = Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -88,7 +88,7 @@ sub parse_parser {
 
 	$kd->skip_ws;
 	my $l = $kd->line;
-	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
+	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; my ($proto) = \@_;";
 
 	substr($l, $kd->offset+1, 0) = $code;
 	$kd->line($l);
@@ -101,7 +101,7 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $kd = Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Declare->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -115,7 +115,7 @@ sub action_parser {
 
 	$kd->skip_ws;
 	my $l = $kd->line;
-	my $code =  "BEGIN { Keyword::eos()}; my ($proto) = \@_;";
+	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; my ($proto) = \@_;";
 
 	substr($l, $kd->offset+1, 0) = $code;
 	$kd->line($l);
@@ -128,7 +128,7 @@ sub action_parser {
 
 sub eos {
 	on_scope_end {
-		my $kd = new Keyword::Declare;
+		my $kd = Devel::Declare::Keyword::Declare->new;
 		my $l = $kd->line;
 		my $loffset = $kd->line_offset;
 		substr($l, $loffset, 0) = ';';
@@ -177,7 +177,7 @@ sub mk_import {
 		else {
 			no strict 'refs';
 			*{$module_user."::$keyword"} = sub { 
-				&$Keyword::__keyword_block(@Keyword::__keyword_block_arg); 
+				&$Devel::Declare::Keyword::__keyword_block(@Devel::Declare::Keyword::__keyword_block_arg); 
 			};
 		}
 	};
@@ -189,14 +189,14 @@ __END__
 
 =head1 NAME 
 
-Keyword - an easy way to declare keyword with custom parsers
+Devel::Declare::Keyword - an easy way to declare keyword with custom parsers
 
 =cut
 
 =head1 SYNOPSIS
 
  package Method;
- use Keyword 'debug';
+ use Devel::Declare::Keyword;
 
  keyword method (ident?, proto?, block) {
 	 $block->name($ident); # assign the block to subroutine
@@ -277,9 +277,7 @@ There job is to convert whatever is matched to injectable perl code.
 
 =head1 CODE
 
-http://github.com/robinedwards/Keyword
-
-git@github.com:robinedwards/Keyword.git
+git push p5sagit@git.shadowcat.co.uk:Devel-Declare-Keyword.git
 
 =head1 AUTHOR
 

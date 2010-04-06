@@ -1,11 +1,9 @@
 package SQL;
 use lib 'lib/';
-use Keyword;
+use Devel::Declare::Keyword;
 use DBI;
 use Carp;
 use Data::Dumper;
-
-#sub import { install_keyword_SELECT();};
 
 our $DBH;
 

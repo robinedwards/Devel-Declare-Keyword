@@ -1,14 +1,14 @@
-package Keyword::Parser;
+package Devel::Declare::Keyword::Parser;
 use strict;
 use warnings;
 use Carp;
-use Keyword::Declare;
+use Devel::Declare::Keyword::Declare;
 use Data::Dumper;
 
 our %BUILTIN = (
-	proto => 'Keyword::Parse::Proto::parse_proto',
-	ident => 'Keyword::Parse::Ident::parse_ident',
-	block => 'Keyword::Parse::Block::new',
+	proto => 'Devel::Declare::Keyword::Parse::Proto::parse_proto',
+	ident => 'Devel::Declare::Keyword::Parse::Ident::parse_ident',
+	block => 'Devel::Declare::Keyword::Parse::Block::new',
 );
 
 sub new {
@@ -25,7 +25,7 @@ sub build {
 	$self->_lookup_routines;
 	
 	return sub {
-		my $kd = Keyword::Declare->new(@_);
+		my $kd = Devel::Declare::Keyword::Declare->new(@_);
 		$kd->skip_token($kd->declarator);
 		$kd->skip_ws;
 
@@ -39,10 +39,10 @@ sub build {
 
 		# if it has a block execute keyword block at compile
 		if($self->{block}) { 
-			&{$Keyword::__keyword_block}(@arg);
+			&{$Devel::Declare::Keyword::__keyword_block}(@arg);
 		}
 		else { # no block execute at runtime, save arg
-			@Keyword::__keyword_block_arg = @arg;
+			@Devel::Declare::Keyword::__keyword_block_arg = @arg;
 		}
 	};
 }

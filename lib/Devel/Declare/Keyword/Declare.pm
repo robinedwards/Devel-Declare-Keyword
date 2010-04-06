@@ -1,4 +1,4 @@
-package Keyword::Declare;
+package Devel::Declare::Keyword::Declare;
 use strict;
 use warnings;
 use Carp;
@@ -16,7 +16,7 @@ Keyword::Declare - simple oo interface to Devel::Declare
 
 =head1 SYNOPSIS
 
- my $kd = new Keyword::Declare;
+ my $kd = new Devel::Declare::Keyword::Declare;
  print $kd->line;
 
 =cut
@@ -287,12 +287,6 @@ sub shadow {
 
     return $sub;
 }
-
-=head1 CODE
-
-http://github.com/robinedwards/Keyword
-
-git@github.com:robinedwards/Keyword.git
 
 =head1 AUTHOR
 

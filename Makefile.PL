@@ -2,7 +2,7 @@ use inc::Module::Install;
 
 # Define metadata
 name           'Keyword';
-all_from       'lib/Keyword.pm';
+all_from       'lib/Devel/Declare/Keyword.pm';
 
 # Specific dependencies
 requires       'Devel::Declare'  => '0.0';
