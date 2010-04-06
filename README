@@ -31,7 +31,6 @@ keyword method (ident?, proto?, custom, block) {
 	$block->terminate; # add semi colon
 }
 
-# passed a Keyword::Declare object
 parse custom ($parser) {
 	if (my $len = $parser->scan_word(1)) {
 		my $l = $parser->line;
