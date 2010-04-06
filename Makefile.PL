@@ -1,7 +1,7 @@
 use inc::Module::Install;
 
 # Define metadata
-name           'Devel::Declare::Keyword';
+name           'Devel-Declare-Keyword';
 all_from       'lib/Devel/Declare/Keyword.pm';
 
 # Specific dependencies
