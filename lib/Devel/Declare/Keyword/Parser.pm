@@ -2,7 +2,7 @@ package Devel::Declare::Keyword::Parser;
 use strict;
 use warnings;
 use Carp;
-use Devel::Declare::Keyword::Declare;
+use Devel::Declare::Keyword::Context;
 use Data::Dumper;
 
 our %BUILTIN = (
@@ -25,7 +25,7 @@ sub build {
 	$self->_lookup_routines;
 	
 	return sub {
-		my $kd = Devel::Declare::Keyword::Declare->new(@_);
+		my $kd = Devel::Declare::Keyword::Context->new(@_);
 		$kd->skip_token($kd->declarator);
 		$kd->skip_ws;
 
