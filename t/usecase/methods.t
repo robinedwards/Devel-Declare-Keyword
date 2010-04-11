@@ -14,6 +14,7 @@ method add ($a, $b, $c) {
 use Test::More qw/no_plan/;
 use Data::Dumper;
 
-ok (Foobar->add(1,2,3)==6);
+my $r = Foobar->add(1,2,3);
+ok($r = 6);
 
 ok 1;
