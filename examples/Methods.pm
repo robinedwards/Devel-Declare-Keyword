@@ -3,7 +3,7 @@ use lib 'lib/';
 use Devel::Declare::Keyword qw/debug/;
 use Data::Dumper;
 
-keyword method (ident?, proto?, block) {
+keyword method (Maybe[ident] $ident, Maybe[proto] $proto, Block $block) {
 	$block->name($ident);
 	$block->inject_begin($proto);
 	$block->inject_after("warn 'post block inject ok';");

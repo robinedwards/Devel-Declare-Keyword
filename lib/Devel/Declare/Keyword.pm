@@ -12,7 +12,7 @@ use Devel::Declare::Keyword::Parse::Block;
 use Devel::Declare::Keyword::Parse::Proto 'parse_proto';
 use Devel::Declare::Keyword::Parse::Ident 'parse_ident';
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $KW_MODULE = caller;
 our $DEBUG = 0;
 
@@ -136,17 +136,30 @@ sub eos {
 	};
 }
 
+# parse keywords prototype and return code
 sub kw_proto_to_code {
 	my ($proto) = @_;
-	my $inject = " my (";
+	
+	my @var;
 
-	$proto =~ s/\?//g;
-	$proto =~ s/\s//g;
-	$proto =~ s/\,/\,\$/g;
-	$proto = "\$".$proto if length $proto;
-	$inject .= $proto.') = @_; ';
+	my $parse_rule;
 
-	return $inject;
+	for my $item (split /,/, $proto) {
+		my ($decl,$name) = split /\s/, $item;
+		if ($decl =~ /Maybe\[(\w+)\]/) {
+			$parse_rule = $1;
+		}
+		elsif($decl =~ /\w+/) {
+			$parse_rule = $1;
+		}
+		else {
+			confess "error parsing keyword prototype";
+		}
+		push @var, $name;
+	}
+
+	warn " my (".join(', $', @var).') = @_;';
+	return " my (".join(', $', @var).') = @_;';
 }
 
 # build import routine for new keyword module
