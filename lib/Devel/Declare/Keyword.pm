@@ -6,7 +6,7 @@ use Carp;
 use Devel::Declare;
 use B::Hooks::EndOfScope;
 use Data::Dumper;
-use Devel::Declare::Keyword::Declare;
+use Devel::Declare::Keyword::Context;
 use Devel::Declare::Keyword::Parser;
 use Devel::Declare::Keyword::Parse::Block;
 use Devel::Declare::Keyword::Parse::Proto 'parse_proto';
@@ -41,7 +41,7 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	my $kd = Devel::Declare::Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Context->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -74,7 +74,7 @@ sub keyword_parser {
 
 # parses the parse keyword
 sub parse_parser {
-	my $kd = Devel::Declare::Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Context->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -101,7 +101,7 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $kd = Devel::Declare::Keyword::Declare->new(@_);
+	my $kd = Devel::Declare::Keyword::Context->new(@_);
 	$kd->next_token;
 	$kd->skip_ws;
 
@@ -128,7 +128,7 @@ sub action_parser {
 
 sub eos {
 	on_scope_end {
-		my $kd = Devel::Declare::Keyword::Declare->new;
+		my $kd = Devel::Declare::Keyword::Context->new;
 		my $l = $kd->line;
 		my $loffset = $kd->line_offset;
 		substr($l, $loffset, 0) = ';';
@@ -148,8 +148,6 @@ sub kw_proto_to_code {
 
 	return $inject;
 }
-
-sub debug { warn "DEBUG: @_\n" if $DEBUG; }
 
 # build import routine for new keyword module
 sub mk_import {
