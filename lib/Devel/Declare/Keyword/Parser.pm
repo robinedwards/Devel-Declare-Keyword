@@ -17,13 +17,14 @@ sub new {
 	$self->{module} or confess 'no module provided';
 	$self->{keyword} or confess 'no keyword provided';
 	bless($self,$class);	
+	$self->_parse_proto;
+	return $self;
 }
 
 sub build {
 	my $self = shift;
-	$self->_build_ident_list;
 	$self->_lookup_routines;
-	
+
 	return sub {
 		my $kd = Devel::Declare::Keyword::Context->new(@_);
 		$kd->skip_token($kd->declarator);
@@ -47,6 +48,8 @@ sub build {
 	};
 }
 
+
+
 sub declare {
 	my ($self, $d) = @_;
 	$self->{declare} = $d if $d;
@@ -62,18 +65,45 @@ sub exec {
 	return &{$pa->{action}}($match);
 }
 
-sub _build_ident_list {
-	my $self = shift;
-	$self->{proto} =~ s/\s//g;
-	my @i = split /\,/, $self->{proto};
-	for my $ident (@i){
-		$ident =~ /^[a-z]{1}\w+[\?]?$/i or 
-		confess "bad identifier '$ident' in prototype.";
-		my $opt;
-		$ident =~ s/\?//g and $opt = 1 if $ident =~ /\?$/;
-		push @{$self->{plist}}, {name=>lc($ident),optional=>$opt};
-	}
+sub unfold_proto_code {
+	return $_[0]->{proto_code};
 }
+
+# parse prototype and return code
+sub _parse_proto {
+	my $self = shift;
+
+	my @var;
+
+	for my $item (split /,\s*/, $self->{proto}) {
+		my ($rule,$ident) = split /\s+/, $item;
+		my $opt;
+		if ($rule =~ /^Maybe\[([a-zA-Z]{1}\w+)\]+$/) {
+			$rule = $1;
+			$opt = 1;
+		}
+		elsif($rule =~ /^([a-zA-Z]{1}\w+)$/) {
+			$rule = $1;
+		}
+		else {
+			confess "Error parsing keyword prototype near: '$item'";
+		}
+
+		confess "Bad identifier for scalar near: $item"
+			unless $ident =~ /^\$[a-zA-Z]{1}\w+$/;
+
+		push @var, $ident;
+		push @{$self->{plist}}, {name=>$rule,optional=>$opt};
+	}
+
+	warn Dumper $self->{plist};
+
+	$self->{proto_code} = 
+		'BEGIN { Devel::Declare::Keyword::eos()};'
+		. " my (".join(', ', @var).') = @_;';
+}
+
+
 
 sub _lookup_routines {
 	my $self = shift;

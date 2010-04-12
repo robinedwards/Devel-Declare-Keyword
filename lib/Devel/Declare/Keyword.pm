@@ -64,8 +64,8 @@ sub keyword_parser {
 
 	$kd->skip_ws;
 	my $l = $kd->line;
-	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; ".kw_proto_to_code($proto);
-	substr($l, $kd->offset+1, 0) = $code;
+	
+	substr($l, $kd->offset+1, 0) = $parser->unfold_proto_code;
 	$kd->line($l);
 
 	#install shadow for keyword routine
@@ -136,31 +136,7 @@ sub eos {
 	};
 }
 
-# parse keywords prototype and return code
-sub kw_proto_to_code {
-	my ($proto) = @_;
-	
-	my @var;
 
-	my $parse_rule;
-
-	for my $item (split /,/, $proto) {
-		my ($decl,$name) = split /\s/, $item;
-		if ($decl =~ /Maybe\[(\w+)\]/) {
-			$parse_rule = $1;
-		}
-		elsif($decl =~ /\w+/) {
-			$parse_rule = $1;
-		}
-		else {
-			confess "error parsing keyword prototype";
-		}
-		push @var, $name;
-	}
-
-	warn " my (".join(', $', @var).') = @_;';
-	return " my (".join(', $', @var).') = @_;';
-}
 
 # build import routine for new keyword module
 sub mk_import {
