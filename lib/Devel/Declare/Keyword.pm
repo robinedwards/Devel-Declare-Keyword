@@ -39,19 +39,19 @@ sub import {
 
 #parses keyword signature
 sub keyword_parser {
-	my $kd = Devel::Declare::Keyword::Context->new(@_);
-	$kd->next_token;
-	$kd->skip_ws;
+	my $ctx = Devel::Declare::Keyword::Context->new(@_);
+	$ctx->next_token;
+	$ctx->skip_ws;
 
 	#strip out the name of new keyword
-	my $keyword = Ident($kd) or
-	confess "expecting identifier for keyword near:\n".$kd->line;
+	my $keyword = Ident($ctx) or
+	confess "expecting identifier for keyword near:\n".$ctx->line;
 
-	$kd->skip_ws;
+	$ctx->skip_ws;
 
 	#extract the prototype
-	my $proto = Proto($kd)	or
-	confess "expecting prototype for keyword at:\n".$kd->line;
+	my $proto = Proto($ctx)	or
+	confess "expecting prototype for keyword at:\n".$ctx->line;
 
 	my $b = 1 if $proto =~ /block/i;
 	my $parser = Devel::Declare::Keyword::Parser->new({proto=>$proto, 
@@ -60,38 +60,38 @@ sub keyword_parser {
 	no strict 'refs';
 	*{$KW_MODULE."::import"} = mk_import($parser->build, $keyword, $b);
 
-	$kd->skip_ws;
-	my $l = $kd->line;
+	$ctx->skip_ws;
+	my $l = $ctx->line;
 	
-	substr($l, $kd->offset+1, 0) = $parser->unfold_proto_code;
-	$kd->line($l);
+	substr($l, $ctx->offset+1, 0) = $parser->unfold_proto_code;
+	$ctx->line($l);
 
 	#install shadow for keyword routine
-	$kd->shadow($kd->package."::".$keyword);
+	$ctx->shadow($ctx->package."::".$keyword);
 }
 
 # parses the parse keyword
 sub parse_parser {
-	my $kd = Devel::Declare::Keyword::Context->new(@_);
-	$kd->next_token;
-	$kd->skip_ws;
+	my $ctx = Devel::Declare::Keyword::Context->new(@_);
+	$ctx->next_token;
+	$ctx->skip_ws;
 
 	#strip out the name of parse routine
-	my $name = Ident($kd) or
-	confess "expecting identifier for parse near:\n".$kd->line;
+	my $name = Ident($ctx) or
+	confess "expecting identifier for parse near:\n".$ctx->line;
 
-	$kd->skip_ws;
-	my $proto = Proto($kd)	or
-	confess "expecting prototype for parse at:\n".$kd->line;
+	$ctx->skip_ws;
+	my $proto = Proto($ctx)	or
+	confess "expecting prototype for parse at:\n".$ctx->line;
 
-	$kd->skip_ws;
-	my $l = $kd->line;
+	$ctx->skip_ws;
+	my $l = $ctx->line;
 	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; my ($proto) = \@_;";
 
-	substr($l, $kd->offset+1, 0) = $code;
-	$kd->line($l);
+	substr($l, $ctx->offset+1, 0) = $code;
+	$ctx->line($l);
 
-	$kd->shadow("$KW_MODULE\::parse", sub (&) { 
+	$ctx->shadow("$KW_MODULE\::parse", sub (&) { 
 		no strict 'refs';
 		*{$KW_MODULE."::parse_$name"} =  shift; 
 	});
@@ -99,26 +99,26 @@ sub parse_parser {
 
 # parses the action keyword
 sub action_parser {
-	my $kd = Devel::Declare::Keyword::Context->new(@_);
-	$kd->next_token;
-	$kd->skip_ws;
+	my $ctx = Devel::Declare::Keyword::Context->new(@_);
+	$ctx->next_token;
+	$ctx->skip_ws;
 
 	#strip out the name of action
-	my $name = Ident($kd) or
-	confess "expecting identifier for action near:\n".$kd->line;
+	my $name = Ident($ctx) or
+	confess "expecting identifier for action near:\n".$ctx->line;
 
-	$kd->skip_ws;
-	my $proto = Proto($kd) or
-	confess "expecting prototype for action at:\n".$kd->line;
+	$ctx->skip_ws;
+	my $proto = Proto($ctx) or
+	confess "expecting prototype for action at:\n".$ctx->line;
 
-	$kd->skip_ws;
-	my $l = $kd->line;
+	$ctx->skip_ws;
+	my $l = $ctx->line;
 	my $code =  "BEGIN { Devel::Declare::Keyword::eos()}; my ($proto) = \@_;";
 
-	substr($l, $kd->offset+1, 0) = $code;
-	$kd->line($l);
+	substr($l, $ctx->offset+1, 0) = $code;
+	$ctx->line($l);
 
-	$kd->shadow("$KW_MODULE\::action", sub (&) { 
+	$ctx->shadow("$KW_MODULE\::action", sub (&) { 
 		no strict 'refs';
 		*{$KW_MODULE."::action_$name"} =  shift; 
 	});
@@ -126,11 +126,11 @@ sub action_parser {
 
 sub eos {
 	on_scope_end {
-		my $kd = Devel::Declare::Keyword::Context->new;
-		my $l = $kd->line;
-		my $loffset = $kd->line_offset;
+		my $ctx = Devel::Declare::Keyword::Context->new;
+		my $l = $ctx->line;
+		my $loffset = $ctx->line_offset;
 		substr($l, $loffset, 0) = ';';
-		$kd->line($l);
+		$ctx->line($l);
 	};
 }
 
@@ -180,37 +180,31 @@ Devel::Declare::Keyword - an easy way to declare keyword with custom parsers
 
 =head1 SYNOPSIS
 
- package Method;
- use Devel::Declare::Keyword;
-
- keyword method (ident?, proto?, block) {
-	 $block->name($ident); # assign the block to subroutine
-	 $block->inject_begin($proto); # inject proto code
-	 $block->inject_after("warn '$ident() finished';");
-	 $block->terminate; # add semi colon
- }
+	keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
+		$block->name($ident);
+		$block->inject_begin($proto);
+		$block->inject_after("warn 'post block inject ok';");
+		$block->terminate;
+	}
 
 
- # converts proto str to code
- action proto ($proto) {
-	 $proto =~ s/\s//g;
-	 $proto = "\$self,$proto" if length($proto);
-	 return " my ($proto) = \@_; ";
- }
+	action Proto ($proto) {
+		$proto =~ s/\s//g;
+		$proto = "\$self,$proto" if length($proto);
+		return " my ($proto) = \@_; ";
+	}
 
- # return method name
- action ident ($ident) { 
-	 return $ident; 
- }
+	# return method name
+	action Ident ($ident) { 
+		return $ident; 
+	}
+	1;
+	 
+	use Method;
 
- 1;
- 
- # some other code
- use Method;
-
- method add ($a, $b, $c) { 
-	 return $a+$b+$c;
- }
+	method add ($a, $b, $c) { 
+		return $a+$b+$c;
+	}
 
 =cut
 
@@ -224,25 +218,25 @@ Each identifier in a keywords prototype represents a parse routine and its assoc
 
 There are three built-in parse routines:
 
- ident - matches an identifier 
- proto - matches anything surrounded by parenthese
- block - matches the start of a block
+ Ident - matches an identifier 
+ Proto - matches anything surrounded by parenthese
+ Block - matches the start of a block
 
 Its possible to write your own with the following syntax:
 
- parse identifier($parser) {
-    if (my $len = $parser->scan_word(1)) {
-        my $l = $parser->line;
-        my $ident = substr($l, $parser->offset, $len);
-        substr($l, $parser->offset, $len) = '';
-        $parser->line($l);
-        return $ident if $ident =~ /^[a-z]{1}\w+$/i;
+ parse UpperIdent($ctx) {
+    if (my $len = $ctx->scan_word(1)) {
+        my $l = $ctx->line;
+        my $ident = substr($l, $ctx->offset, $len);
+        substr($l, $ctx->offset, $len) = '';
+        $ctx->line($l);
+        return $ident if $ident =~ /^[A-Z]+$/;
     }	
  }
 
 =head3 Blocks
 
-A block is different from a standard parse routine as it returns an object.
+A block is different from a standard parser routine as it returns an object.
 
 This object contains several routines for injecting code into the block:
 
@@ -254,9 +248,9 @@ This object contains several routines for injecting code into the block:
 
 =head2 Actions
 
-Actions get passed whatever the associated parse routine 'matches'.
+Actions get passed whatever the associated routine returns.
 
-There job is to convert whatever is matched to injectable perl code.
+Typically used to return injectable perl code.
 
 =cut
 
@@ -276,7 +270,3 @@ Copyright (c) 2009 Robin Edwards
 
 This library is free software and may be distributed under the same terms
 as perl itself.
-
-
-
-

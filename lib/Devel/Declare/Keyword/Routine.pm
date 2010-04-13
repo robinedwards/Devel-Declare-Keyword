@@ -6,25 +6,25 @@ use Exporter 'import';
 our @EXPORT_OK = qw/Proto Ident/;
 
 sub Proto {
-	my $parser = shift;
-	my $l = $parser->line;
-	if (substr($l, $parser->offset, 1) eq '(') {
-		my $length = $parser->scan_string;
-		my $proto = $parser->scanned;
-		$l = $parser->line;
-		substr($l, $parser->offset, $length) = '';
-		$parser->line($l);
+	my $ctx = shift;
+	my $l = $ctx->line;
+	if (substr($l, $ctx->offset, 1) eq '(') {
+		my $length = $ctx->scan_string;
+		my $proto = $ctx->scanned;
+		$l = $ctx->line;
+		substr($l, $ctx->offset, $length) = '';
+		$ctx->line($l);
 		return $proto;
 	}
 }
 
 sub Ident {
-	my $parser = shift;
-	if (my $len = $parser->scan_word(1)) {
-		my $l = $parser->line;
-		my $ident = substr($l, $parser->offset, $len);
-		substr($l, $parser->offset, $len) = '';
-		$parser->line($l);
+	my $ctx = shift;
+	if (my $len = $ctx->scan_word(1)) {
+		my $l = $ctx->line;
+		my $ident = substr($l, $ctx->offset, $len);
+		substr($l, $ctx->offset, $len) = '';
+		$ctx->line($l);
 		return $ident if $ident =~ /^[a-z]{1}\w+$/i;
 	}
 }

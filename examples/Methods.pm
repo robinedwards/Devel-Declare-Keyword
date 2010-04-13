@@ -6,7 +6,7 @@ use Data::Dumper;
 keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
 	$block->name($ident);
 	$block->inject_begin($proto);
-	$block->inject_after("warn 'post block inject ok';");
+	$block->inject_after("\$CALLS++;");
 	$block->terminate;
 }
 

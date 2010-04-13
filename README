@@ -8,12 +8,9 @@ Methods.pm - usual method signature
 PLAN
 * add support for multiple keywords per module
 * remove globals
-* write pod for Keyword::Declare
 * cleanup parser construction (check if code exists etc)
 * write default action to return whatever the parse routine matched
 * add pre and post block hooks with shadow { setup_stuff() ;exec_block(); do_stuff; return $ret}
-* alter sig syntax to (see MXD code) 
-	keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
 
 RESEARCH
 * find usescases from: http://cpants.perl.org/dist/used_by/Devel-Declare
@@ -24,19 +21,19 @@ RESEARCH
 
 CURRENT SYNTAX
 # parse an action routines called for each entry in proto
-keyword method (ident?, proto?, custom, block) {
+keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Custom $c, Block $block) {
 	$block->name($ident); # name the block
 	$block->inject_begin($proto); # inject at begin of block
 	$block->inject_after("warn '$ident() finished';");
 	$block->terminate; # add semi colon
 }
 
-parse custom ($parser) {
-	if (my $len = $parser->scan_word(1)) {
-		my $l = $parser->line;
-		my $ident = substr($l, $parser->offset, $len);
-		substr($l, $parser->offset, $len) = '';
-		$parser->line($l);
+parse Custom ($ctx) {
+	if (my $len = $ctx->scan_word(1)) {
+		my $l = $ctx->line;
+		my $ident = substr($l, $ctx->offset, $len);
+		substr($l, $ctx->offset, $len) = '';
+		$ctx->line($l);
 		return $ident if $ident =~ /^[a-z]{1}\w+$/i;
 	}
 	else {
@@ -45,7 +42,7 @@ parse custom ($parser) {
 }
 
 # passed whatever the parse routine matches
-action proto ($match) {
+action Proto ($match) {
 	my $match;
 	return $code;
 }

@@ -15,11 +15,21 @@ Devel::Declare::Keyword::Context - simple interface to Devel::Declare
 
 =head1 SYNOPSIS
 
- my $kc = new Devel::Declare::Keyword::Context;
- print $kc->line;
+ my $ctx = Devel::Declare::Keyword::Context->new;
+ sub Proto {
+	my $ctx = shift;
+	my $l = $ctx->line;
+	if (substr($l, $ctx->offset, 1) eq '(') {
+		my $length = $ctx->scan_string;
+		my $proto = $ctx->scanned;
+		$l = $ctx->line;
+		substr($l, $ctx->offset, $length) = '';
+		$ctx->line($l);
+		return $proto;
+	}
+ }
 
 =cut
-
 
 sub new {
 	my ($class,$decl,$offset) = @_;
