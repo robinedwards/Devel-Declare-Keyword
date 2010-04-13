@@ -7,7 +7,7 @@ use Data::Dumper;
 
 our $DBH;
 
-keyword SELECT (sql) {
+keyword SELECT (sql $sql) {
 	confess "no database connection set" unless $DBH;
 	return $DBH->selectrow_hashref($sql);
 }

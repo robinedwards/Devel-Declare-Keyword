@@ -3,7 +3,7 @@ use Devel::Declare::Keyword;
 use Data::Dumper;
 ok 1;
 
-keyword method (ident?, proto?, thing, block) {
+keyword method (Maybe[Ident] $ident, Maybe[Proto] $xd, Thing $p, Block $b) {
 	ok 1;
 }
 

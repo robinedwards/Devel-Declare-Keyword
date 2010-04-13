@@ -1,9 +1,9 @@
 package Methods;
 use lib 'lib/';
-use Devel::Declare::Keyword qw/debug/;
+use Devel::Declare::Keyword;
 use Data::Dumper;
 
-keyword method (Maybe[ident] $ident, Maybe[proto] $proto, block $block) {
+keyword method (Maybe[Ident] $ident, Maybe[Proto] $proto, Block $block) {
 	$block->name($ident);
 	$block->inject_begin($proto);
 	$block->inject_after("warn 'post block inject ok';");
@@ -11,14 +11,14 @@ keyword method (Maybe[ident] $ident, Maybe[proto] $proto, block $block) {
 }
 
 
-action proto ($proto) {
+action Proto ($proto) {
 	$proto =~ s/\s//g;
 	$proto = "\$self,$proto" if length($proto);
 	return " my ($proto) = \@_; ";
 }
 
 # return method name
-action ident ($ident) { 
+action Ident ($ident) { 
 	return $ident; 
 }
 

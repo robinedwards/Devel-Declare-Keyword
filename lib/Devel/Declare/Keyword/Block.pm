@@ -1,4 +1,4 @@
-package Devel::Declare::Keyword::Parse::Block;
+package Devel::Declare::Keyword::Block;
 use strict;
 use warnings;
 use B::Hooks::EndOfScope;

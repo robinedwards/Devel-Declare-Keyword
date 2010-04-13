@@ -3,12 +3,14 @@ use strict;
 use warnings;
 use Carp;
 use Devel::Declare::Keyword::Context;
+use Devel::Declare::Keyword::Block;
+use Devel::Declare::Keyword::Routine;
 use Data::Dumper;
 
 our %BUILTIN = (
-	proto => 'Devel::Declare::Keyword::Parse::Proto::parse_proto',
-	ident => 'Devel::Declare::Keyword::Parse::Ident::parse_ident',
-	block => 'Devel::Declare::Keyword::Parse::Block::new',
+	Proto => 'Devel::Declare::Keyword::Routine::Proto',
+	Ident => 'Devel::Declare::Keyword::Routine::Ident',
+	Block => 'Devel::Declare::Keyword::Block::new',
 );
 
 sub new {
@@ -78,11 +80,11 @@ sub _parse_proto {
 	for my $item (split /,\s*/, $self->{proto}) {
 		my ($rule,$ident) = split /\s+/, $item;
 		my $opt;
-		if ($rule =~ /^Maybe\[([a-zA-Z]{1}\w+)\]+$/) {
+		if ($rule =~ /^Maybe\[([a-zA-Z]{1}\w*)\]+$/) {
 			$rule = $1;
 			$opt = 1;
 		}
-		elsif($rule =~ /^([a-zA-Z]{1}\w+)$/) {
+		elsif($rule =~ /^([a-zA-Z]{1}\w*)$/) {
 			$rule = $1;
 		}
 		else {
@@ -90,20 +92,16 @@ sub _parse_proto {
 		}
 
 		confess "Bad identifier for scalar near: $item"
-			unless $ident =~ /^\$[a-zA-Z]{1}\w+$/;
+			unless $ident =~ /^\$[a-zA-Z]{1}\w*$/;
 
 		push @var, $ident;
 		push @{$self->{plist}}, {name=>$rule,optional=>$opt};
 	}
 
-	warn Dumper $self->{plist};
-
 	$self->{proto_code} = 
 		'BEGIN { Devel::Declare::Keyword::eos()};'
 		. " my (".join(', ', @var).') = @_;';
 }
-
-
 
 sub _lookup_routines {
 	my $self = shift;
@@ -128,7 +126,7 @@ sub _find_parse_sub {
 sub _find_action_sub {
 	my ($self, $ident) = @_;
 	no strict 'refs';
-	if($ident eq 'block') {
+	if($ident eq 'Block') {
 		return sub {@_};
 	}
 	else {

@@ -8,9 +8,7 @@ use B::Hooks::EndOfScope;
 use Data::Dumper;
 use Devel::Declare::Keyword::Context;
 use Devel::Declare::Keyword::Parser;
-use Devel::Declare::Keyword::Parse::Block;
-use Devel::Declare::Keyword::Parse::Proto 'parse_proto';
-use Devel::Declare::Keyword::Parse::Ident 'parse_ident';
+use Devel::Declare::Keyword::Routine qw/Proto Ident/;
 
 our $VERSION = '0.04';
 our $KW_MODULE = caller;
@@ -46,13 +44,13 @@ sub keyword_parser {
 	$kd->skip_ws;
 
 	#strip out the name of new keyword
-	my $keyword = parse_ident($kd) or
+	my $keyword = Ident($kd) or
 	confess "expecting identifier for keyword near:\n".$kd->line;
 
 	$kd->skip_ws;
 
 	#extract the prototype
-	my $proto = parse_proto($kd)	or
+	my $proto = Proto($kd)	or
 	confess "expecting prototype for keyword at:\n".$kd->line;
 
 	my $b = 1 if $proto =~ /block/i;
@@ -79,11 +77,11 @@ sub parse_parser {
 	$kd->skip_ws;
 
 	#strip out the name of parse routine
-	my $name = parse_ident($kd) or
+	my $name = Ident($kd) or
 	confess "expecting identifier for parse near:\n".$kd->line;
 
 	$kd->skip_ws;
-	my $proto = parse_proto($kd)	or
+	my $proto = Proto($kd)	or
 	confess "expecting prototype for parse at:\n".$kd->line;
 
 	$kd->skip_ws;
@@ -106,11 +104,11 @@ sub action_parser {
 	$kd->skip_ws;
 
 	#strip out the name of action
-	my $name = parse_ident($kd) or
+	my $name = Ident($kd) or
 	confess "expecting identifier for action near:\n".$kd->line;
 
 	$kd->skip_ws;
-	my $proto = parse_proto($kd) or
+	my $proto = Proto($kd) or
 	confess "expecting prototype for action at:\n".$kd->line;
 
 	$kd->skip_ws;
