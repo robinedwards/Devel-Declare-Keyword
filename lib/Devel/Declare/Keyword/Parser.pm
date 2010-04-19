@@ -28,11 +28,11 @@ sub build {
 	$self->_lookup_routines;
 
 	return sub {
-		my $kd = Devel::Declare::Keyword::Context->new(@_);
-		$kd->skip_token($kd->declarator);
-		$kd->skip_ws;
+		my $ctx = Devel::Declare::Keyword::Context->new(@_);
+		$ctx->skip_token($ctx->declarator);
+		$ctx->skip_ws;
 
-		$self->declare($kd);
+		$self->declare($ctx);
 
 		my @arg;
 		#call each parse routine and action
